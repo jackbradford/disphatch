@@ -9,6 +9,8 @@
  * of the final page (in the case of synchronous page requests), like the title
  * and meta description.
  */
+namespace JackBradford\ActionRouter\Router;
+
 class Output {
 
 	protected $content		=	null;

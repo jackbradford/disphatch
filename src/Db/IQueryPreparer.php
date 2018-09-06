@@ -4,6 +4,8 @@
  * This file provides an interface for query preparers.
  *
  */
+namespace JackBradford\ActionRouter\Db;
+
 interface IQueryPreparer {
 
 	public function prepareDeleteStmt($options);

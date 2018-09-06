@@ -4,6 +4,8 @@
  * This file provides a database-access abstraction layer.
  *
  */
+namespace JackBradford\ActionRouter\Db;
+
 class Db {
 
 	private	$database;

@@ -11,8 +11,9 @@
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+// This would be part of the project which uses the library.
 // Include the composer autoload file.
-require LIB_PATH . '/vendor/autoload.php';
+//require_once dirname(__FILE__) . '../vendor/autoload.php';
 
 $capsule	=	new Capsule;
 $capsule->addConnection([

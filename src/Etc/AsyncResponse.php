@@ -8,6 +8,8 @@
  * This class is responsible for enforcing a standard mode of communication
  * with the client application.
  */
+namespace JackBradford\ActionRouter\Etc;
+
 class AsyncResponse {
 
 	private $success	=	null;
@@ -70,13 +72,33 @@ class AsyncResponse {
 	 * @return void
 	 * Emits a JSON object which contains the properties of the instance.
 	 */
-	public function sendResponse() {
+	public function sendJSONResponse() {
 
 		echo json_encode([
-				'success'	=>	$this->success,
-				'title'		=>	$this->title,
-				'message'	=>	$this->message,
-				'data'		=>	$this->data,
+
+			'success'	=>	$this->success,
+			'title'		=>	$this->title,
+			'message'	=>	$this->message,
+			'data'		=>	$this->data,
+		]);
+	}
+
+	/**
+	 * @method AsyncResponse::getJSONResponse()
+	 * Returns a JSON-encoded response, as opposed to emitting it.
+	 *
+	 * @return str
+	 * Returns the output of json_encode() applied to an array of the class
+	 * instance's properties.
+	 */
+	public function getJSONResponse() {
+
+		return json_encode([
+			
+			'success'	=>	$this->success,
+			'title'		=>	$this->title,
+			'message'	=>	$this->message,
+			'data'		=>	$this->data,
 		]);
 	}
 	

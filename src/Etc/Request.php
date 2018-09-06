@@ -9,6 +9,9 @@
  * interface to other components of the system through which those components
  * can make queries regarding the specifications of the request.
  */
+
+namespace JackBradford\ActionRouter\Etc;
+
 class Request {
 
 	private	$fieldMap;

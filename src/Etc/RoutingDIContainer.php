@@ -5,6 +5,8 @@
  * package the objects required to construct a Router.
  *
  */
+namespace JackBradford\ActionRouter\Etc;
+
 class RoutingDIContainer {
 
 	public $request;

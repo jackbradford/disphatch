@@ -13,6 +13,8 @@
  * an alias and/or a value.
  *
  */
+namespace JackBradford\ActionRouter\Db;
+
 class QueryField {
 
 	public $field, $alias, $value;

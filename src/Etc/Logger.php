@@ -10,6 +10,8 @@
  * access to a database to make the logs more accessible than they would be if
  * they existed in a log file only.
  */
+namespace JackBradford\ActionRouter\Etc;
+
 class Logger {
 
 	private $db;

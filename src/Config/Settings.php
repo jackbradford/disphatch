@@ -24,8 +24,10 @@
  * leaked to visitors of the site.
  *
  */
-abstract class Settings
-{
+namespace JackBradford\ActionRouter\Config;
+
+abstract class Settings {
+
 	static private $privateDirectives = [];
 	static private $publicDirectives = [];
 
@@ -43,6 +45,10 @@ abstract class Settings
 	 * When accessing an array of directives, specify the array with the first
 	 * $key parameter. Then, to access a specific directive within that array, 
 	 * pass an additional $key parameter which matches the desired array key.
+	 *
+	 * @return mixed
+	 * Returns the value (or array) of the specified directive.
+	 *
 	 */
 	public static function getDirective($section, ...$keys) {
 
@@ -71,7 +77,7 @@ abstract class Settings
 	 *
 	 * @param bool $processSections
 	 * From the manual (php.net):
-	 * [By settings the process_sections parameter to TRUE, you get a multi-
+	 * [By setting the process_sections parameter to TRUE, you get a multi-
 	 * dimensional array, with the section names and settings included.]
 	 * Here, the default is TRUE.
 	 */

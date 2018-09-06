@@ -10,8 +10,10 @@
  * abstraction class.
  *
  */
-class DbFactory extends Settings
-{
+namespace JackBradford\ActionRouter\Db;
+
+class DbFactory extends Settings {
+
 	public static function getDbInst() {
 
 		$qp		=	new MySqlQueryPreparer();

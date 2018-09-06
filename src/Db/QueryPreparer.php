@@ -7,6 +7,8 @@
  * This class is responsible for preparing mySQL queries.
  *
  */
+namespace JackBradford\ActionRouter\Db;
+
 class MySqlQueryPreparer implements IQueryPreparer {
 
 	private $params = [];

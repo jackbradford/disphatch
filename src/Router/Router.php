@@ -1,14 +1,33 @@
 <?php
 /**
  * @file
- * This file provides a router for the application.
+ * This file provides the router.
  *
  * The router loads a list of "routes," which map actions to their
  * corresponding controllers. A route is specified with the request. This
  * class has the responsibility of routing the request to the appropriate
- * controller, which oversees the business logic of the requested task.
+ * controller, which oversees the business logic of the requested task and
+ * returns a response to the router.
  *
  */
+namespace JackBradford\ActionRouter\Router;
+
+use JackBradford\ActionRouter\Config\Settings;
+use JackBradford\ActionRouter\Config\Config;
+use JackBradford\ActionRouter\Db\Db;
+use JackBradford\ActionRouter\Db\DbFactory;
+use JackBradford\ActionRouter\Etc\Request;
+use JackBradford\ActionRouter\Etc\UserManager;
+use JackBradford\ActionRouter\Etc\Logger;
+use JackBradford\ActionRouter\Etc\NotLoggedInException;
+use JackBradford\ActionRouter\Etc\RoutingDIContainer;
+
+/*
+ * use JackBradford\ActionRouter\Config;
+ * use JackBradford\ActionRouter\Db;
+ * use JackBradford\ActionRouter\Etc;
+ */
+
 class Router extends Output {
 
 	protected	$user;
@@ -18,8 +37,8 @@ class Router extends Output {
 	private		$request;
 	private		$logger;
 	private		$dc;
-	private		$serveContentOnly = false;
-	private		$routes = array();
+	private		$serveContentOnly	=	false;
+	private		$routes				=	array();
 
 	/**
 	 * @method Router::__construct()
@@ -28,12 +47,16 @@ class Router extends Output {
 	 * calling the appropriate controller method, and returning the result in
 	 * the requested format.
 	 *
+	 * @see Router::init
+	 * This class is instantiated via the Factory method. To create an instance,
+	 * use Router::init().
+	 *
 	 * @param RoutingDIContainer $dc
 	 * An instance of the Routing Dependency Injection Container, which contains
-	 * a Request object, Logger object, Db Abstraction object, and a User Management
-	 * object.
+	 * a Request instance, Logger instance, Db Abstraction instance, and a User Management
+	 * instance.
 	 */
-	public function __construct(RoutingDIContainer $dc) {
+	private function __construct(RoutingDIContainer $dc) {
 
 		try {
 	
@@ -57,31 +80,27 @@ class Router extends Output {
 
 	/**
 	 * @method Router::init()
-	 * Initialize the Router in preparation of handling the current request.
+	 * Initialize the Router before handling the current request.
 	 *
 	 * @param str $configPath
 	 * The path to the configuration file.
 	 *
 	 * @return Router
 	 */
-	public static function init($configPath) {
+	public static function init($iniPath) {
 
 		try {
 
-			require_once $configPath;
+			Config::setConfigurationFromFile($iniPath);
 			$request	=	new Request();
 			$settings	=	new PublicSettings();
 			$user		=	new UserManager($request, $settings);
 
-			if (!$user->isLoggedIn()) {
+			if (!$user->isAuthorizedToMakeRequest()) {
 
-				if	 	($request->isFromCLI()) $user->loginCLIAdmin();
-				elseif 	(!$request->isAuthRequest()) {
-
-					$message	=	'User must log in; request was not for authorization. ';
-					$message	.=	'Asking user to send authorization request...';
-					throw new NotLoggedInException($message);
-				}
+				$message	=	'User must log in; request was not for authorization. ';
+				$message	.=	'Asking user to send authorization request...';
+				throw new NotLoggedInException($message);
 			}
 
 			$db			=	DbFactory::getDbInst();
@@ -92,8 +111,12 @@ class Router extends Output {
 
 		} catch (NotLoggedInException $e) {
 
-			$login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
-			UserManager::{ $login }();
+			if ($request->isFromCLI()) UserManager::askForCLILogin();
+			else {
+			
+				$login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
+				UserManager::{ $login }();
+			}
 
 		} catch (Exception $e) {
 
@@ -163,6 +186,9 @@ class Router extends Output {
 			default:
 				$this->setTemplate(PUBLIC_TEMPLATE);
 		}
+
+		ob_start();
+		// TODO: should this be configurable?
 		require_once TEMPLATE_PATH . '/admin_client.php';
 		return ob_get_clean();
 	}
@@ -172,23 +198,27 @@ class Router extends Output {
 	 * Call the action specified in the request via the appropriate controller.
 	 *
 	 * @return string
-	 * Returns the contents of the output buffer, which will have collected the
-	 * output from the controller's method call. The output buffer was started
-	 * when the application's config file was loaded.
+	 * Returns the contents returned by the controller method specified in the 
+	 * request.
+	 *
+	 * @important
+	 * The user-defined controller method should NOT emit its response. Any
+	 * plain-text/HTML should be captured via (e.g.) the output buffer and
+	 * returned to this method.
 	 */
 	public function callRequestedAction() {
 
 		if (isset($this->action)) $action = $this->action;
 		else throw new Exception(__METHOD__.': No Action Given.', 302);
 
-		$this->controller->{ $action }();
-		$content =	ob_get_clean();
+		$content	=	$this->controller->{ $action }();
 
 		if ($content === false) {
 
-			$message = __METHOD__ . ': Could not get content from buffer.';
+			$message = __METHOD__ . ': User-Defined controller returned FALSE.';
 			throw new Exception($message, 306);
 		}
+
 		return $content;
 	}
 	
@@ -248,6 +278,8 @@ class Router extends Output {
 	 */
 	public function serveErrorNotice($e) {
 
+		ob_start();
+
 		if ($this->request->isAsync()) {
 
 			$res	=	new AsyncResponse([
@@ -270,6 +302,7 @@ class Router extends Output {
 			}
 			require_once PUBLIC_PATH . '/view/pages/error.php';
 		}
+
 		$this->setContent(ob_get_clean());
 		$this->serveContent();
 	}

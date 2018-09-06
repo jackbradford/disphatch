@@ -8,6 +8,8 @@
  * parameters which should be bound to it.
  *
  */
+namespace JackBradford\ActionRouter\Db;
+
 class PreparedStatement {
 
 	private $params, $query;

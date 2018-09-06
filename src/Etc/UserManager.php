@@ -12,6 +12,8 @@ use Cartalyst\Sentinel\Native\Facades\Sentinel;
  * It is responsible for authorizing user, performing tasks related to the user,
  * and providing information about the user.
  */
+namespace JackBradford\ActionRouter\Etc;
+
 class UserManager {
 
 	protected $user	=	null;
@@ -54,6 +56,15 @@ class UserManager {
 		// has timed out. This method should ask the user to login again.
 	}
 
+	public static function askForCLILogin() {
+
+		$message	=	"\nNot Authorized:\nPlease log in as an administrator ";
+		$message	.=	"before accessing the system via the command line.\n\n";
+		$message	.=	"To request log-in:\n";
+
+		echo $message;
+	}
+
 	/**
 	 * @method UserManager::authorize()
 	 * Authorize a user's request. When a user's request specifies an "action,"
@@ -75,6 +86,8 @@ class UserManager {
 			throw new Exception(__METHOD__ . ': User not set.');
 		}
 
+		// TODO: put this in the config file
+		$auths	=	Settings::getDirective(); 
 		$auths	=	[
 
 			'Inventory::commitItem'				=>	'inventory.commit',
@@ -104,6 +117,25 @@ class UserManager {
 		}
 	}
 	
+	/**
+	 * @method UserManager::isAuthorizedToMakeRequest
+	 * Checks whether the incoming request can be executed. This is distinct
+	 * from UserManager::authorize(), which authorizes specific methods within
+	 * the controllers to which a registered user has a level of access.
+	 *
+	 * @return bool
+	 * If the user is logged in, is making a log-in request, or is requesting a
+	 * public page, returns true. Otherwise returns false.
+	 *
+	 */
+	public function isAuthorizedToMakeRequest() {
+
+		if ($this->isLoggedIn()) return true;
+		if ($this->request->isFromGuest()) return true;
+		if ($this->request->isAuthRequest()) return true;
+		return false;
+	}
+
 	/**
 	 * @method UserManager::isLoggedIn()
 	 * Checks whether a user a logged in.
@@ -140,15 +172,17 @@ class UserManager {
 
 	/**
 	 * @method UserManager::loginGuest()
-	 * Log in the Guest user.
+	 * Log in the Guest user. The "Guest User" is the user that the
+	 * user-management system will assign to anonymous visitors for
+	 * e.g. authentication purposes.
 	 *
 	 * @return void
 	 * This method will throw an exception if authentication does not succeed.
 	 */
 	public function loginGuest() {
 
-		$guest	=	$this->settings->guest_user;
-		$credentials = [
+		$guest			=	$this->settings->guest_user;
+		$credentials	= [
 			'un'=>'webguest',
 			'pw'=>$guest['password'],
 		];

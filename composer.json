@@ -1,0 +1,12 @@
+{
+	"name":			"jackbradford/action-router",
+	"description":	"A router that maps requests to user-defined controller methods, called actions.",
+	"require":		{
+		"php":	"^5.3.3 || ^7.0",
+		"cartalyst/sentinel":	"2.0.*",
+		"illuminate/database":	"dev-master",
+		"illuminate/events":	"dev-master",
+		"symfony/http-foundation":	"dev-master"
+	}
+}
+
