@@ -1,0 +1,58 @@
+{
+    "action_query_str": "actn",
+    "ctrl_query_str":   "ctrl",
+    "async_post_flag":  "ajrq",
+
+    "default_action":   "home",
+
+    "client_apps":  {
+        "admin":    "/template.php"
+    },
+
+    "controllers":  {
+        "default":  "admin",
+        "admin":    {
+            "class":                "AdminController",
+            "isPublic":             false,
+            "errorPageTemplate":    "filepath/file.php",
+            "errorPageHeading":     "An error has occurred."
+        },
+        "auth":     {
+            "class":                "AuthController",
+            "isPublic":             true,
+            "errorPageTemplate":    "filepath/file.php",
+            "errorPageHeading":     "An error has occurred."
+        }
+    },
+
+    "dbs"   :   {
+        "al_db":    {
+            "hostname": "localhost",
+            "database": "al_db",
+            "username": "admin",
+            "password": "regina_saskatchewan"
+        },
+        "sentinel_db":  "al_db"
+    },
+
+    "permissions":  {
+        "AdminController::home":        [],
+        "AdminController::createUser":  [
+            "users.manage",
+            "users.create"
+        ],
+        "AuthController::auth":         [],
+    }
+
+    "templates":        {
+        "admin":    "/template.php"
+    },
+
+    "users":    {
+        "cli_user": {
+            "username": "cli",
+            "password": "AtlanticLabCLIAccessUser_2017"
+        }
+    }
+}
+
