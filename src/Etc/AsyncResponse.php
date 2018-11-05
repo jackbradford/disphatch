@@ -12,139 +12,154 @@ namespace JackBradford\ActionRouter\Etc;
 
 class AsyncResponse {
 
-	private $success	=	null;
-	private $message;
-	private $title;
-	private $data;
+    private $success;
+    private $userIsLoggedIn;
+    private $message;
+    private $title;
+    private $data;
 
-	private function __clone() {}
+    private function __clone() {}
 
-	/**
-	 * @method AsyncResponse::__construct()
-	 * Create a new instance of this class.
-	 *
-	 * @param array $args
-	 * An array of response properties.
-	 *
-	 * @param bool $args['success']
-	 * Whether the initial request was successfully fulfilled (required).
-	 *
-	 * @param str $args['title']
-	 * The title of the response (optional).
-	 *
-	 * @param str $args['message']
-	 * The details/message related to the response (optional).
-	 *
-	 * @param mixed $args['data']
-	 * The data to be passed to the client (optional).
-	 *
-	 * @return AsyncResponse
-	 */
-	public function __construct(array $args) {
+    /**
+     * @method AsyncResponse::__construct()
+     * Create a new instance of this class.
+     *
+     * @param UserManager $user
+     * The instance of the user manager.
+     *
+     * @param array $args
+     * An array of response properties.
+     *
+     * @param bool $args['success']
+     * Whether the initial request was successfully fulfilled (required).
+     *
+     * @param str $args['title']
+     * The title of the response (optional).
+     *
+     * @param str $args['message']
+     * The details/message related to the response (optional).
+     *
+     * @param mixed $args['data']
+     * The data to be passed to the client (optional).
+     *
+     * @return AsyncResponse
+     */
+    public function __construct(UserManager $user, array $args) {
 
-		if (isset($args['success']) && is_bool($args['success'])) {
+        $this->success = $this->validateSuccess($args);
+        $this->userIsLoggedIn = $user->isLoggedIn();
 
-			$this->success	=	$args['success'];
-		} 
-		else {
+        $this->message = (isset($args['message']))
+            ? htmlentities($args['message'])
+            : null;
 
-			$m	=	__METHOD__.': Argument for success status expects boolean.';
-			throw new Exception($m);
-		}
+        $this->title = (isset($args['title']))
+            ? htmlentities($args['title'])
+            : null;
 
-		$this->message = (isset($args['message']))
-			? htmlentities($args['message'])
-			: null;
+        $this->data = (isset($args['data']))
+            ? $args['data']
+            : null;
+    }
+    
+    /**
+     * @method AsyncResponse::sendResponse()
+     * Send a JSON-encoded response to the client.
+     *
+     * @return void
+     * Emits a JSON object which contains the properties of the instance.
+     */
+    public function sendJSONResponse() {
 
-		$this->title = (isset($args['title']))
-			? htmlentities($args['title'])
-			: null;
+        echo json_encode([
 
-		$this->data = (isset($args['data']))
-			? $args['data']
-			: null;
-	}
-	
-	/**
-	 * @method AsyncResponse::sendResponse()
-	 * Send a JSON-encoded response to the client.
-	 *
-	 * @return void
-	 * Emits a JSON object which contains the properties of the instance.
-	 */
-	public function sendJSONResponse() {
+            'success' => $this->success,
+            'userIsLoggedIn' => $this->userIsLoggedIn,
+            'title' => $this->title,
+            'message' => $this->message,
+            'data' => $this->data,
+        ]);
+    }
 
-		echo json_encode([
+    /**
+     * @method AsyncResponse::getJSONResponse()
+     * Returns a JSON-encoded response, as opposed to emitting it.
+     *
+     * @return str
+     * Returns the output of json_encode() applied to an array of the class
+     * instance's properties.
+     */
+    public function getJSONResponse() {
 
-			'success'	=>	$this->success,
-			'title'		=>	$this->title,
-			'message'	=>	$this->message,
-			'data'		=>	$this->data,
-		]);
-	}
+        return json_encode([
+            
+            'success' => $this->success,
+            'userIsLoggedIn' => $this->userIsLoggedIn,
+            'title' => $this->title,
+            'message' => $this->message,
+            'data' => $this->data,
+        ]);
+    }
+    
+    /**
+     * @method AsyncResponse::setTitle()
+     * Set the title of the response.
+     *
+     * @param str $title
+     * The title of the response.
+     *
+     * @return void
+     * Sets the $title property of the instance.
+     */
+    public function setTitle($title) {
 
-	/**
-	 * @method AsyncResponse::getJSONResponse()
-	 * Returns a JSON-encoded response, as opposed to emitting it.
-	 *
-	 * @return str
-	 * Returns the output of json_encode() applied to an array of the class
-	 * instance's properties.
-	 */
-	public function getJSONResponse() {
+        $this->title = htmlentities($title);
+    }
+    
+    /**
+     * @method AsyncResponse::setMessage()
+     * Set the message/description of the response.
+     *
+     * @param str $msg
+     * The message/description of the response.
+     *
+     * @return void
+     * Sets the $message property of the instance.
+     */
+    public function setMessage($msg) {
 
-		return json_encode([
-			
-			'success'	=>	$this->success,
-			'title'		=>	$this->title,
-			'message'	=>	$this->message,
-			'data'		=>	$this->data,
-		]);
-	}
-	
-	/**
-	 * @method AsyncResponse::setTitle()
-	 * Set the title of the response.
-	 *
-	 * @param str $title
-	 * The title of the response.
-	 *
-	 * @return void
-	 * Sets the $title property of the instance.
-	 */
-	public function setTitle($title) {
+        $this->message = htmlentities($msg);
+    }
 
-		$this->title	=	htmlentities($title);
-	}
-	
-	/**
-	 * @method AsyncResponse::setMessage()
-	 * Set the message/description of the response.
-	 *
-	 * @param str $msg
-	 * The message/description of the response.
-	 *
-	 * @return void
-	 * Sets the $message property of the instance.
-	 */
-	public function setMessage($msg) {
+    /**
+     * @method AsyncResponse::setData()
+     * Set the data to be sent with the response.
+     *
+     * @param mixed $data
+     * The data to send with the response.
+     *
+     * @return void
+     * Sets the $data property of the instance.
+     */
+    public function setData($data) {
 
-		$this->message	=	htmlentities($msg);
-	}
+        $this->data = $data;
+    }
 
-	/**
-	 * @method AsyncResponse::setData()
-	 * Set the data to be sent with the response.
-	 *
-	 * @param mixed $data
-	 * The data to send with the response.
-	 *
-	 * @return void
-	 * Sets the $data property of the instance.
-	 */
-	public function setData($data) {
+    /**
+     * @method AsyncResponse::validateSuccess
+     * Check whether the 'success' argument is an expected value.
+     *
+     * @return bool
+     */
+    private function validateSuccess(array $args) {
 
-		$this->data	=	$data;
-	}
+        if (!isset($args['success']) || !is_bool($args['success'])) {
+
+            $m = __METHOD__.': Argument for success status expects boolean.';
+            throw new Exception($m);
+        } 
+        return $args['success'];
+    }
 }
 
