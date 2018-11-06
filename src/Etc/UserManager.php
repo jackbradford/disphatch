@@ -16,341 +16,390 @@ namespace JackBradford\ActionRouter\Etc;
 
 class UserManager {
 
-	protected $user	=	null;
-	protected $request;
-	protected $settings;
+    protected $user = null;
+    protected $request;
+    protected $config;
 
-	/**
-	 * @method UserManager::__construct()
-	 * Construct a new instance of UserManager.
-	 *
-	 * @param Request $request
-	 * An instance of the Request class, which represents the initial
-	 * request to the application.
-	 *
-	 * @param Settings $settings
-	 * An instance of the Settings class, which is necessary for accessing
-	 * the settings defined in the application's .ini file.
-	 *
-	 * @return UserManager
-	 * Returns an instance of UserManager, initialized with the currently
-	 * logged-in user, if applicable.
-	 */
-	public function __construct(Request $request, Settings $settings) {
+    /**
+     * @method UserManager::__construct()
+     * Construct a new instance of UserManager.
+     *
+     * @param Request $request
+     * An instance of the Request class, which represents the initial
+     * request to the application.
+     *
+     * @param Config $config
+     * An instance of the Config class, which is necessary for accessing
+     * the settings defined in the application's .ini file.
+     *
+     * @return UserManager
+     * Returns an instance of UserManager, initialized with the currently
+     * logged-in user, if applicable.
+     */
+    public function __construct(Request $request, Config $config) {
 
-		$this->request	= $request;
-		$this->settings	= $settings;
-		$this->user	= ($this->isLoggedIn()) ? Sentinel::check() : null;	
-	}
+        $this->request = $request;
+        $this->config = $config;
+        $this->user = ($this->isLoggedIn())
+            ? $this->attemptSetLoggedInUser()
+            : null; 
+    }
 
-	/**
-	 * @method UserManager::askForAsyncLogin()
-	 * Complete an asynchronous request with a response directing the user of the
-	 * remote client to log in. This may be necessary e.g. when a user's session
-	 * has expired, requiring re-authentication, during the course of using the
-	 * client-side interface.
-	 */
-	public static function askForAsyncLogin() {
+    /**
+     * @method UserManager::askForAsyncLogin()
+     * For the case that the user has previously logged in and is using e.g. a
+     * client-based JS application, but the server session timed out since the
+     * user's last request. This method returns a JSON response to be handled by
+     * that client application.
+     */
+    public function askForAsyncLogin() {
 
-		// For the case that the user has previous logged in, but the session
-		// has timed out. This method should ask the user to login again.
-	}
+        $response = new AsyncResponse([
 
-	public static function askForCLILogin() {
+            'success' => false,
+            'title' => 'Login Required',
+        ]);
+        $response->sendJSONResponse();
+    }
 
-		$message	=	"\nNot Authorized:\nPlease log in as an administrator ";
-		$message	.=	"before accessing the system via the command line.\n\n";
-		$message	.=	"To request log-in:\n";
+    /**
+     * @method UserManager::authorize()
+     * Authorize a user's request. When a user's request specifies an "action,"
+     * that action is managed by a method in the appropriate controller. Each
+     * method may have different access requirements, and this method affords
+     * the enforcement of those requirements.
+     *
+     * @param str $method
+     * The method to authorize. E.g. ClassName::methodName
+     *
+     * @return bool
+     * Returns TRUE if authorization has been granted, FALSE otherwise. If the
+     * method given cannot be found in the permission/method map, an exception
+     * will be thrown.
+     */
+    public function authorize($method) {
 
-		echo $message;
-	}
+        if (!$this->user) {
+            throw new Exception(__METHOD__ . ': User not set.');
+        }
 
-	/**
-	 * @method UserManager::authorize()
-	 * Authorize a user's request. When a user's request specifies an "action,"
-	 * that action is managed by a method in the appropriate controller. Each
-	 * method may have different access requirements, and this method affords
-	 * the enforcement of those requirements.
-	 *
-	 * @param str $method
-	 * The method to authorize.
-	 *
-	 * @return bool
-	 * Returns TRUE if authorization has been granted, FALSE otherwise. If the
-	 * method given cannot be found in the permission/method map, an exception
-	 * will be thrown.
-	 */
-	public function authorize($method) {
+        $auths = $this->config->getDirective('permissions');
 
-		if (!$this->user) {
-			throw new Exception(__METHOD__ . ': User not set.');
-		}
+        if (!property_exists($auths, $method)) {
 
-		// TODO: put this in the config file
-		$auths	=	Settings::getDirective(); 
-		$auths	=	[
+            $m = __METHOD__ . ': No permissions for the given method could be found. ';
+            throw new Exception($m);
+        }
 
-			'Inventory::commitItem'				=>	'inventory.commit',
-			'Inventory::deleteItem'				=>	'inventory.delete',
-			'Inventory::assignStatus'			=>	'inventory.status',
-			'InvItem::updateItemStatus'			=>	'inventory.status',
-			'AdminController::showList'			=>	'inventory.view_list',
-			'AdminController::showItemData'		=>	'inventory.view_details',
-			'AdminController::updateInvItem'	=>	'inventory.edit',
-			'AdminController::getInvAssetData'	=>	'inventory.view_details',
-			'AdminController::itemImport'		=>	'inventory.import',
-			'AdminController::submitItemImport'	=>	'inventory.import',
-			'AdminController::modifyExportList'	=>	'inventory.export',
-			'AdminController::getCSV'			=>	'inventory.export',
-			'AdminController::prepareExport'	=>	'inventory.export',
-		];
+        foreach ($auths->{$method} as $permission) { 
+        
+            if (!$this->user->hasAccess($permission)) return false;
+        }
+        return true;
 
-		if (array_key_exists($method, $auths)) {
+    }
+    
+    /**
+     * @method UserManager::createUser
+     * Creates a new user. Activating the user at the same time is optional.
+     * Users must be activated before they may log in.
+     *
+     * @param str $fname
+     * The user's first name.
+     *
+     * @param str $lname
+     * The user's last name.
+     *
+     * @param str $email
+     * The user's email.
+     *
+     * @param str $password
+     * The user's password.
+     *
+     * @return User
+     * Returns an instance of the User class.
+     */
+    public function createUser($fname, $lname, $email, $password) {
 
-			$auth = ($this->user->hasAccess([$auths[$method]])) ? true : false;
-			return $auth;
+        if (!$user = Sentinel::create([
+        
+            'first_name' => $fname,
+            'last_name' => $lname,
+            'email' => $email,
+            'password' => $password,
+        ])) {
 
-		} else {
+            throw new Exception(
+                __METHOD__.': Could not create user. Ensure all necessary
+                fields have been entered.'
+            );
+        }
 
-			$m	=	__METHOD__ . ': No permissions for the given function could be found. ';
-			throw new Exception($m);
-		}
-	}
-	
-	/**
-	 * @method UserManager::isAuthorizedToMakeRequest
-	 * Checks whether the incoming request can be executed. This is distinct
-	 * from UserManager::authorize(), which authorizes specific methods within
-	 * the controllers to which a registered user has a level of access.
-	 *
-	 * @return bool
-	 * If the user is logged in, is making a log-in request, or is requesting a
-	 * public page, returns true. Otherwise returns false.
-	 *
-	 */
-	public function isAuthorizedToMakeRequest() {
+        return new User($user);
+    }
 
-		if ($this->isLoggedIn()) return true;
-		if ($this->request->isFromGuest()) return true;
-		if ($this->request->isAuthRequest()) return true;
-		return false;
-	}
+    /**
+     * @method UserManager::isAuthorizedToMakeRequest
+     * Checks whether the incoming request can be executed. This is distinct
+     * from UserManager::authorize(), which authorizes specific methods within
+     * the controllers to which a registered user has a level of access.
+     *
+     * @return bool
+     * If the user is logged in, is making a log-in request, or is requesting a
+     * public page, returns true. Otherwise returns false.
+     *
+     */
+    public function isAuthorizedToMakeRequest() {
 
-	/**
-	 * @method UserManager::isLoggedIn()
-	 * Checks whether a user a logged in.
-	 *
-	 * @return bool
-	 * Retruns TRUE if a user is logged in. FALSE if otherwise.
-	 */
-	public function isLoggedIn() {
+        if ($this->isLoggedIn()) return true;
+        if ($this->request->isForPublicResource()) return true;
+        if ($this->request->isAuthRequest()) return true;
+        if ($this->request->isFromCLI()) return true;
+        return false;
+    }
 
-		return (Sentinel::check() !== false) ? true : false;
-	}
+    /**
+     * @method UserManager::isLoggedIn()
+     * Checks whether a user a logged in.
+     *
+     * @return bool
+     * Retruns TRUE if a user is logged in. FALSE if otherwise.
+     */
+    public function isLoggedIn() {
 
-	/**
-	 * @method UserManager::loginAdmin()
-	 * Log in the administrative user.
-	 *
-	 * @param array $credentials
-	 * The array of credentials which contain the username ('un') and password
-	 * ('pw') of the user.
-	 *
-	 * @return bool
-	 * Returns true on success. Exception(s) are thrown if the authentication
-	 * does not succeed.
-	 */
-	public function loginAdmin(array $credentials = []) {
+        return (Sentinel::check() !== false) ? true : false;
+    }
 
-		$credentials = (empty($credentials))
-			?	$this->request->decodePostedJSON()
-			:	$credentials;
+    /**
+     * @method UserManager::login
+     * Attempt to log in a user.
+     *
+     * @param array $credentials
+     * The array of credentials which contain the username ('un') and password
+     * ('pw') of the user.
+     *
+     * @return void
+     * Throws exception on error.
+     */
+    public function login(array $credentials) {
 
-		$this->login($credentials);
-		return true;
-	}
+        $user = $this->findUser($credentials);
+        $userIsValid = $this->validateUserCredentials($user, [
+            'email' => $user->email,
+            'password' => $credentials['pw']
+        ]);
 
-	/**
-	 * @method UserManager::loginGuest()
-	 * Log in the Guest user. The "Guest User" is the user that the
-	 * user-management system will assign to anonymous visitors for
-	 * e.g. authentication purposes.
-	 *
-	 * @return void
-	 * This method will throw an exception if authentication does not succeed.
-	 */
-	public function loginGuest() {
+        if ($userIsValid) {
 
-		$guest			=	$this->settings->guest_user;
-		$credentials	= [
-			'un'=>'webguest',
-			'pw'=>$guest['password'],
-		];
-		$this->login($credentials);
-	}
+            $this->attemptLogin($user);
+            $this->attemptSetLoggedInUser();
+        } 
+        else {
 
-	/**
-	 * @method UserManager::loginCLIAdmin()
-	 * Log in the user which represents the use of the application via the
-	 * local CLI.
-	 *
-	 * @return void
-	 * This method will throw an exception if authentication does not succeed.
-	 */
-	public function loginCLIAdmin() {
+            throw new Exception('Invalid Password.');
+        }
+    }
 
-		$credentials = [
-			'un'=>'cli',
-			'pw'=>$this->settings->cli_user['password'],
-		];
-		$this->login($credentials);
-	}
+    /**
+     * @method UserManager::logout()
+     * Log a user out of the system.
+     *
+     * @return bool
+     * Returns TRUE upon successful logout, FALSE if a user remains logged in.
+     */
+    public function logout() {
 
-	/**
-	 * @method UserManager::logout()
-	 * Log a user out of the system.
-	 *
-	 * @return bool
-	 * Returns TRUE upon successful logout, FALSE if a user remains logged in.
-	 */
-	public function logout() {
+        if (!Sentinel::logout()) {
 
-		if (!Sentinel::logout()) {
+            $m = __METHOD__ . ': Could not end user session.';
+            throw new Exception($m);
+        } 
+        else $this->user = null;
+        return (Sentinel::check()) ? false : true;
+    }
 
-			$m	=	__METHOD__ . ': Could not end user session.';
-			throw new Exception($m);
-		} 
-		else $this->user = null;
-		return (Sentinel::check()) ? false : true;
-	}
+    /**
+     * @method UserManager::getCurrentUser()
+     * Get an object containing the current user's data.
+     *
+     * @return User
+     * Returns null if there is no user currently logged in.
+     */
+    public function getCurrentUser() {
 
-	/**
-	 * @method UserManager::getEmail()
-	 * Get the current user's email address.
-	 *
-	 * @return str
-	 */
-	public function getEmail() {
+        return (!empty($this->user)) 
+            ? $this->user 
+            : null;
+    }
 
-		return $this->user->email;
-	}
+    /**
+     * @method UserManager::getUser()
+     * Load a User instance via the user's login credentials.
+     *
+     * @param str $email
+     * The user's email associated with their account.
+     *
+     * @return User
+     */
+    public function getUser($email) {
 
-	/**
-	 * @method UserManager::getFullName()
-	 * Get the current user's full name.
-	 *
-	 * @return str
-	 */
-	public function getFullName() {
+        return new User(Sentinel::findByCredentials(['login'=>$email]));
+    }
 
-		return $this->user->first_name . ' ' . $this->user->last_name;
-	}
+    /**
+     * @method UserManager::getUserById
+     * Load a User instance via the user's id.
+     *
+     * @param int $id
+     * The user record's id.
+     *
+     * @return User
+     */
+    public function getUserById($id) {
 
-	/**
-	 * @method UserManager::getId()
-	 * Get the current user's ID.
-	 *
-	 * @return int
-	 */
-	public function getId() {
+        return new User(Sentinel::findById($id));
+    }
 
-		return $this->user->id;
-	}
-	
-	/**
-	 * @method UserManager::getUserData()
-	 * Get an object containing the current user's data.
-	 *
-	 * @return mixed
-	 */
-	public function getUserData() {
+    /**
+     * @method UserManager::currentUserHasAccess()
+     * Check whether a user has access to a set of permissions.
+     *
+     * @param $permissions
+     * The set of permissions to check for access.
+     *
+     * @return bool
+     * Returns TRUE if the user has access, FALSE otherwise.
+     */
+    public function currentUserHasAccess($permissions) {
 
-		return (!empty($this->user)) ? $this->user : null;
-	}
+        return ($this->$user->hasAccess($permissions)) ? true : false;
+    }
 
-	/**
-	 * @method UserManager::hasAccess()
-	 * Check whether a user has access to a set of permissions.
-	 *
-	 * @param $permissions
-	 * The set of permissions to check for access.
-	 *
-	 * @return bool
-	 * Returns TRUE if the user has access, FALSE otherwise.
-	 */
-	public function hasAccess($permissions) {
+    /**
+     * @method UserManager::sendToLoginPage()
+     * Send a user to the login page.
+     *
+     * @return void
+     * Loads the login page into the current output buffer.
+     */
+    public function sendToLoginPage() {
 
-		return ($user->hasAccess($permissions)) ? true : false;
-	}
+        // TODO validate login page path?
+        require_once $this->settings->getDirective('login_page_path');
+    }
 
-	/**
-	 * @method UserManager::sendToLoginPage()
-	 * Send a user to the login page.
-	 *
-	 * @return void
-	 * Loads the login page into the current output buffer.
-	 */
-	public static function sendToLoginPage() {
+    private function attemptLogin($user) {
 
-		require_once 'admin_login.php';
-	}
+        if (!Sentinel::login($user)) {
 
-	protected function login(array $credentials) {
+            throw new Exception('Login Error');
+        }
+    }
 
-		$user		=	$this->findUser($credentials);
-		$userIsValid=	$this->validateUserCredentials($user, [
-			'email'		=>	$user->email,
-			'password'	=>	$credentials['pw']
-		]);
+    /**
+     * @method UserManager::attemptSetLoggedInUser
+     * Attempt to create an instance of the User class and assign it to this
+     * instance's $user property via the currently logged-in user.
+     *
+     * @return void
+     */
+    private function attemptSetLoggedInUser() {
 
-		if ($userIsValid) {
+        if (($loggedInUser = Sentinel::check()) !== false) {
 
-			$this->attemptLogin($user);
-			$this->attemptSetLoggedInUser();
-		} 
-		else {
+            $this->user = new User($loggedInUser);
+        } 
+        else {
 
-			throw new Exception('Invalid Password ('.$credentials['pw'].').');
-		}
-	}
+            $message = __METHOD__.': Could not log in user: '.$user->email.'.';
+            throw new Exception($message);
+        }
+    }
 
-	private function attemptLogin($user) {
+    /**
+     * @method UserManager::findUser
+     * Find a user via given credentials.
+     *
+     * @param array $credentials
+     * An array of credentials, containing the key ['un'].
+     *
+     * @return Cartalyst\Sentinel\Users\EloquentUser
+     */
+    protected function findUser(array $credentials) {
 
-		if (!Sentinel::login($user)) {
+        $un = htmlentities($credentials['un'], ENT_QUOTES);
+        $user = Sentinel::findByCredentials([
+            'login' => $un,
+        ]);
 
-			throw new Exception('Login Error');
-		}
-	}
+        if (!$user) {
+            throw new Exception(__METHOD__.': Invalid Username.');
+        }
 
-	private function attemptSetLoggedInUser() {
+        return $user;
+    }
 
-		if (($loggedInUser = Sentinel::check()) !== false) {
+    protected function validateUserCredentials($user, array $credentials) {
 
-			$this->user = $loggedInUser;
-		} 
-		else {
+        return (Sentinel::validateCredentials($user, $credentials)) ? true : false;
+    }
 
-			$message = __METHOD__.': Could not log in user: '.$user->email.'.';
-			throw new Exception($message);
-		}
-	}
+    /**
+     * @method UserManager::loginAdmin()
+     * Log in the administrative user.
+     *
+     * @param array $credentials
+     * The array of credentials which contain the username ('un') and password
+     * ('pw') of the user.
+     *
+     * @return bool
+     * Returns true on success. Exception(s) are thrown if the authentication
+     * does not succeed.
+     */
+//  public function loginAdmin(array $credentials = []) {
+//
+//      $credentials = (empty($credentials))
+//          ?   $this->request->decodePostedJSON()
+//          :   $credentials;
+//
+//      $this->login($credentials);
+//      return true;
+//  }
 
-	protected function findUser(array $credentials) {
+    /**
+     * @method UserManager::loginGuest()
+     * Log in the Guest user. The "Guest User" is the user that the
+     * user-management system will assign to anonymous visitors for
+     * e.g. authentication purposes.
+     *
+     * @return void
+     * This method will throw an exception if authentication does not succeed.
+     */
+//  public function loginGuest() {
+//
+//      $guest          =   $this->settings->guest_user;
+//      $credentials    = [
+//          'un'=>'webguest',
+//          'pw'=>$guest['password'],
+//      ];
+//      $this->login($credentials);
+//  }
 
-		$un		=	htmlentities($credentials['un'], ENT_QUOTES) . '@atlanticlabequipment.com';
-		$user	=	Sentinel::findByCredentials([
-			'login' => $un,
-		]);
+    /**
+     * @method UserManager::loginCLIAdmin()
+     * Log in the user which represents the use of the application via the
+     * local CLI.
+     *
+     * @return void
+     * This method will throw an exception if authentication does not succeed.
+     */
+//  public function loginCLIAdmin() {
+//
+//      $credentials = [
+//          'un'=>'cli',
+//          'pw'=>$this->settings->cli_user['password'],
+//      ];
+//      $this->login($credentials);
+//  }
 
-		if (!$user) {
-			throw new Exception(__METHOD__.': Invalid Username.');
-		}
-
-		return $user;
-	}
-
-	protected function validateUserCredentials($user, array $credentials)
-	{
-		return (Sentinel::validateCredentials($user, $credentials)) ? true : false;
-	}
 }
