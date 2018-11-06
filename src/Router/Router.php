@@ -14,6 +14,7 @@ namespace JackBradford\ActionRouter\Router;
 
 use JackBradford\ActionRouter\Config\Settings;
 use JackBradford\ActionRouter\Config\Config;
+use JackBradford\ActionRouter\Controllers\ControllerResponse;
 use JackBradford\ActionRouter\Db\Db;
 use JackBradford\ActionRouter\Db\DbFactory;
 use JackBradford\ActionRouter\Etc\Request;
@@ -30,386 +31,442 @@ use JackBradford\ActionRouter\Etc\RoutingDIContainer;
 
 class Router extends Output {
 
-	protected	$user;
-	private		$controller;
-	private		$action;
-	private		$db;
-	private		$request;
-	private		$logger;
-	private		$dc;
-	private		$serveContentOnly	=	false;
-	private		$routes				=	array();
+    private $action;
+    private $controller;
+    private $db;
+    private $dc;
+    private $logger;
+    private $request;
+    private $routes = array();
+    private $serveContentOnly = false;
+    protected $user;
 
-	/**
-	 * @method Router::__construct()
-	 * Construct a new instance of the Router class, which is responsible for
-	 * inspecting the request, identifying and validating the requested action,
-	 * calling the appropriate controller method, and returning the result in
-	 * the requested format.
-	 *
-	 * @see Router::init
-	 * This class is instantiated via the Factory method. To create an instance,
-	 * use Router::init().
-	 *
-	 * @param RoutingDIContainer $dc
-	 * An instance of the Routing Dependency Injection Container, which contains
-	 * a Request instance, Logger instance, Db Abstraction instance, and a User Management
-	 * instance.
-	 */
-	private function __construct(RoutingDIContainer $dc) {
+    /**
+     * @method Router::init()
+     * Initialize the Router before handling the current request.
+     *
+     * @param str $configPath
+     * The path to the configuration file.
+     *
+     * @return Router
+     */
+    public static function init($configPath) {
 
-		try {
-	
-			$this->dc		=	$dc;
-			$this->request	=	$dc->request;
-			$this->logger	=	$dc->logger;
-			$this->db		=	$dc->db;
-			$this->user		=	$dc->user;
-			$this->routes 	=	$this->loadRoutes();
-		}
-		catch (Exception $e) {
+        try {
 
-			if (isset($dc->logger) && ($dc->logger instanceof Logger)) {
+            $config = new Config();
+            $config->setConfigurationFromFile($configPath);
+            $request = new Request();
+            $user = new UserManager($request, $config);
 
-				$dc->logger->logError($e);
-			}
-			$m	=	'Could not construct Router.';
-			throw new Exception($m, 0, $e);
-		}
-	}
+            if (!$user->isAuthorizedToMakeRequest()) {
 
-	/**
-	 * @method Router::init()
-	 * Initialize the Router before handling the current request.
-	 *
-	 * @param str $configPath
-	 * The path to the configuration file.
-	 *
-	 * @return Router
-	 */
-	public static function init($iniPath) {
+                $message = 'User must log in; request was not for authorization. ';
+                $message .= 'Asking user to send authorization request...';
+                throw new NotLoggedInException($message);
+            }
 
-		try {
+            $db = DbFactory::getDbInst();
+            $logger = new Logger($db);
+            $dc = new RoutingDIContainer($config, $request, $db, $logger, $user);
 
-			Config::setConfigurationFromFile($iniPath);
-			$request	=	new Request();
-			$settings	=	new PublicSettings();
-			$user		=	new UserManager($request, $settings);
+            return new Router($dc);
+        }
+        catch (NotLoggedInException $e) {
 
-			if (!$user->isAuthorizedToMakeRequest()) {
+            $this->requestLogin($request, $user);
+        }
+        catch (Exception $e) {
 
-				$message	=	'User must log in; request was not for authorization. ';
-				$message	.=	'Asking user to send authorization request...';
-				throw new NotLoggedInException($message);
-			}
+            $m = $e->getMessage() . "\n" . $e->getTraceAsString();
+            error_log('ActionRouter failed to initialize: '.$m);
+        }
+    }
 
-			$db			=	DbFactory::getDbInst();
-			$logger		=	new Logger($db);
-			$dc			=	new RoutingDIContainer($request, $db, $logger, $user);
+    /**
+     * @method Router::routeAndExecuteRequest()
+     * Route the request to the appropriate controller action, then execute
+     * that action.
+     *
+     * @param bool $serveClientAppOnSync
+     * Specify whether the router should serve the HTML necessary to run the
+     * client application, rather than the requested data, if the request is
+     * synchronous.
+     *
+     * @return void
+     * Emits a JSON object (or the HTML necessary to run the client 
+     * application).
+     */
+    public function routeAndExecuteRequest($serveClientAppOnSync=true) {
 
-			return new Router($dc);
+        try {
 
-		} catch (NotLoggedInException $e) {
+            $ctrlr = $this->request->getClassNameOfRequestedController();
+            $controller = new $ctrlr($this, $this->dc);
 
-			if ($request->isFromCLI()) UserManager::askForCLILogin();
-			else {
-			
-				$login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
-				UserManager::{ $login }();
-			}
+            $this->setController($controller);
+            $this->setControllerAction($this->request->getNameOfRequestedAction());
 
-		} catch (Exception $e) {
+            if (!$this->user->authorize($ctrlr.'::'.$this->action)) {
 
-			$m	=	$e->getMessage() . ' ' . $e->getTraceAsString();
-			error_log('ActionRouter failed to initialize: '.$m);
-		}
-	}
+                $m = __METHOD__.': User does not have sufficient privileges 
+                     to make this request.';
+                throw new Exception($m);
+            }
 
-	/**
-	 * @method Router::routeAndExecuteRequest()
-	 * Route the request to the appropriate controller action, then execute
-	 * that action.
-	 *
-	 * @param bool $serveClientAppOnSync
-	 * Specify whether the router should serve the HTML necessary to run the
-	 * client application, rather than the requested data, if the request is
-	 * synchronous.
-	 *
-	 * @return void
-	 * Emits a JSON object (or the HTML necessary to run the client 
-	 * application).
-	 */
-	public function routeAndExecuteRequest($serveClientAppOnSync=true) {
+            $response = (!$this->request->isAsync() && $serveClientAppOnSync)
+                ? $this->callClientApp()
+                : $this->callRequestedAction();
 
-		try {
+            $this->setResponse($response);
+            $this->serveContent();
 
-			$ctrlModel	=	CONTROLLERS[$this->request->getNameOfRequestedController()];
-			$controller	=	new $ctrlModel($this->router, $this->dc);
+        } 
+        catch (Exception $e) {
 
-			$this->setController($controller);
-			$this->setControllerAction($this->request->getNameOfRequestedAction());
+            $this->logger->logError($e);
+            $this->serveErrorNotice($e);
+        }
+    }
 
-			$result	= (!$this->request->isAsync() && $serveClientAppOnSync)
-				? $this->callClientApp()
-				: $this->callRequestedAction();
+    /**
+     * @method Router::callClientApp()
+     * In some instances, depending on configuration, it may be
+     * advantageous to serve the client app itself rather than the data
+     * requested. Via such configuration, the same URL can be used both to 
+     * resolve the initial request (by serving the client app only) and 
+     * to deliver the data necessary in that context when called subsequently
+     * (and asynchronously) by that client app.
+     *
+     * @return str
+     * Returns the contents of the HTML file of the appropriate app for
+     * the requested controller, as configured by the user.
+     */
+    public function callClientApp() {
 
-			$this->setContent($result);
-			$this->serveContent();
+        $label = $this->request->getLabelOfRequestedController();
+        $appPath = $this->config->getDirective('client_apps')->{$label};
 
-		} catch (Exception $e) {
+        $this->toggleServeContentOnly(true);
 
-			$this->logger->logError($e);
-			$this->serveErrorNotice($e);
-		}
-	}
+        ob_start();
+        require_once $appPath;
+        $content = ob_get_clean();
 
-	/**
-	 * @method Router::callClientApp()
-	 * In some instances, depending on client configuration, it may be
-	 * advantageous to serve the client app itself rather than the data
-	 * requested. Via such configuration, the same URL can be used both to 
-	 * resolve the initial request (by serving the client app only) and 
-	 * to deliver the data necessary in that context when called subsequently
-	 * by that delivered client.
-	 *
-	 * @return void
-	 */
-	public function callClientApp() {
+        return new ControllerResponse(true, null, [], $content);
+    }
 
-		switch ($this->request->getNameOfRequestedController()) {
+    /**
+     * @method Router::enableCLISession
+     * To enable CLI sessions call this method before executing the request.
+     * The method calls Router::holdCLISession, which will recursively call
+     * itself after each command until the user ends the process or types
+     * 'exit'.
+     *
+     * @return void
+     */
+    public function enableCLISession() {
 
-			case 'admin':
-			case 'record_request':
-				$this->setTemplate(ADMIN_TEMPLATE);
-				break;
+        if (!$this->request->isFromCLI()) return;
+        if (!$this->user->isLoggedIn()) {
+            
+            $this->config->parseArgvIntoGet();
+            $this->user->login([
+                'un' => $_GET['un'],
+                'pw' => $_GET['pw'],
+            ]);
+            echo 'Welcome to the ActionRouter monitor.'."\n";
+        }
+        $this->holdCLISession();
+    }
+    
+    /**
+     * @method Router::getActionName()
+     * Get the name of the currently-set action which will/has been run by the
+     * controller.
+     *
+     * @return str
+     * Returns the name of the action.
+     */
+    public function getActionName() {
 
-			default:
-				$this->setTemplate(PUBLIC_TEMPLATE);
-		}
+        return $this->action;
+    }
+    
+    /**
+     * @method Router::getControllerName()
+     * Get the name of the currently-set controller which will/has been used to
+     * handle the request.
+     *
+     * @return str
+     * Returns the result of the controller instance's toString() method.
+     */
+    public function getControllerName() {
 
-		ob_start();
-		// TODO: should this be configurable?
-		require_once TEMPLATE_PATH . '/admin_client.php';
-		return ob_get_clean();
-	}
+        return (string) $this->controller;
+    }
 
-	/**
-	 * @method callRequestedAction()
-	 * Call the action specified in the request via the appropriate controller.
-	 *
-	 * @return string
-	 * Returns the contents returned by the controller method specified in the 
-	 * request.
-	 *
-	 * @important
-	 * The user-defined controller method should NOT emit its response. Any
-	 * plain-text/HTML should be captured via (e.g.) the output buffer and
-	 * returned to this method.
-	 */
-	public function callRequestedAction() {
+    /**
+     * TODO: update for use with ControllerResponse
+     * @method Router::serveContent()
+     * Serve the content set in the $content property.
+     *
+     * @return void
+     * In the case of an asynchronous request, or in the case the $serveContentOnly
+     * property is set to TRUE, the content contained in the $content property
+     * will be flushed to the client.
+     *
+     * Otherwise, the template file set in the
+     * $templatePath property will be sent to the client. That template file should
+     * access the $content property to display the content within the template.
+     */
+    public function serveContent() {
 
-		if (isset($this->action)) $action = $this->action;
-		else throw new Exception(__METHOD__.': No Action Given.', 302);
+        if ($this->request->isAsync()) $this->flushContent();
+        elseif ($this->serveContentOnly === true) $this->flushContent();
+        else $this->flushAll();
+    }
 
-		$content	=	$this->controller->{ $action }();
+    /**
+     * @method serveErrorNotice()
+     * Serve the Error Page (or deliver an error notice to the client) in the
+     * event of an unrecoverable (but non-fatal) exception.
+     *
+     * @param Exception $e
+     * The exception which could not be recovered from.
+     */
+    public function serveErrorNotice($e) {
 
-		if ($content === false) {
+        $data = $this->prepareAsyncErrorNotice($e);
+        $cliMsg = $this->prepareCLIErrorNotice($e);
+        $content = $this->preapreErrorPage($e);
+        $response = new ControllerResponse(false, $cliMsg, $data, $content);
 
-			$message = __METHOD__ . ': User-Defined controller returned FALSE.';
-			throw new Exception($message, 306);
-		}
+        $this->setResponse($response);
+        $this->serveContent();
+    }
 
-		return $content;
-	}
-	
-	/**
-	 * @method Router::getActionName()
-	 * Get the name of the currently-set action which will/has been run by the
-	 * controller.
-	 *
-	 * @return str
-	 * Returns the name of the action.
-	 */
-	public function getActionName() {
+    /**
+     * TODO: make sure this works with ControllerResponse
+     * @method Router::toggleServeContentOnly()
+     * Toggle or specify the setting which determines whether content should be
+     * sent to the client within an HTML template or by itself, e.g. in the case
+     * of the transmission of JSON data.
+     *
+     * @param bool $setting
+     * The desired setting. Defaults to null, which toggles the current setting.
+     */
+    public function toggleServeContentOnly($setting = null) {
 
-		return $this->action;
-	}
-	
-	/**
-	 * @method Router::getControllerName()
-	 * Get the name of the currently-set controller which will/has been used to
-	 * handle the request.
-	 *
-	 * @return str
-	 * Returns the result of the controller instance's toString() method.
-	 */
-	public function getControllerName() {
+        if ($setting === null) {
 
-		return (string) $this->controller;
-	}
+            $this->serveContentOnly = ($this->serveContentOnly === false)
+                ? true
+                : false;
+        }
+        else {
 
-	/**
-	 * @method Router::serveContent()
-	 * Serve the content set in the $content property.
-	 *
-	 * @return void
-	 * In the case of an asynchronous request, or in the case the $serveContentOnly
-	 * property is set to TRUE, the content contained in the $content property
-	 * will be flushed to the client.
-	 *
-	 * Otherwise, the template file set in the
-	 * $templatePath property will be sent to the client. That template file should
-	 * access the $content property to display the content within the template.
-	 */
-	public function serveContent() {
+            $this->serveContentOnly = ($setting) ? true : false;
+        }
+    }
 
-		if 		($this->request->isAsync()) 		$this->flushContent();
-		elseif	($this->serveContentOnly === true)	$this->flushContent();
-		else	$this->flushAll();
-	}
+    /**
+     * @method Router::__construct()
+     * Construct a new instance of the Router class, which is responsible for
+     * inspecting the request, identifying and validating the requested action,
+     * calling the appropriate controller method, and returning the result in
+     * the requested format.
+     *
+     * @see Router::init
+     * This class is instantiated via the Factory method. To create an instance,
+     * use Router::init().
+     *
+     * @param RoutingDIContainer $dc
+     * An instance of the Routing Dependency Injection Container, which contains
+     * a Request instance, Logger instance, Db Abstraction instance, and a User Management
+     * instance.
+     */
+    private function __construct(RoutingDIContainer $dc) {
 
-	/**
-	 * @method serveErrorNotice()
-	 * Serve the Error Page (or deliver an error notice to the client) in the
-	 * event of an unrecoverable (but non-fatal) exception.
-	 *
-	 * @param Exception $e
-	 * The exception which could not be recovered from.
-	 */
-	public function serveErrorNotice($e) {
+        try {
+    
+            $this->dc = $dc;
+            $this->config = $dc->config;
+            $this->request = $dc->request;
+            $this->logger = $dc->logger;
+            $this->db = $dc->db;
+            $this->user = $dc->user;
+            $this->routes = $this->loadRoutes();
+        }
+        catch (Exception $e) {
 
-		ob_start();
+            $dc->logger->logError($e);
+            $m = 'Could not construct Router. '.$e->getMessage();
+            throw new Exception($m, 0, $e);
+        }
+    }
 
-		if ($this->request->isAsync()) {
+    /**
+     * @method callRequestedAction()
+     * Call the action specified in the request via the appropriate controller.
+     *
+     * @return ControllerResponse
+     * Returns the contents returned by the controller method specified in the 
+     * request.
+     */
+    private function callRequestedAction() {
 
-			$res	=	new AsyncResponse([
-					'success'	=>	false,
-					'title'		=>	'The server could not process your request.',
-					'message'	=>	$e->getMessage(),
-			]);
-			$res->sendResponse();
+        if (isset($this->action)) $action = $this->action;
+        else throw new Exception(__METHOD__.': No Action Given.');
 
-		} else {
+        $response = $this->controller->{ $action }();
 
-			switch ($this->request->getNameOfRequestedController()) {
+        if (!($response instanceof ControllerResponse)) {
 
-				case 'admin':
-					$this->setTemplate(ADMIN_TEMPLATE);
-					break;
+            throw new Exception(
+                __METHOD__.': User-Defined controller must return an instance
+                of class ControllerResponse.'
+            );
+        }
 
-				default:
-					$this->setTemplate(PUBLIC_TEMPLATE);
-			}
-			require_once PUBLIC_PATH . '/view/pages/error.php';
-		}
+        return $response;
+    }
 
-		$this->setContent(ob_get_clean());
-		$this->serveContent();
-	}
+    /**
+     * @method Router::holdCLISession
+     * This method is responsible for asking the user to enter a command,
+     * executing that command, and recursing until the 'exit' command.
+     *
+     * @return void
+     */
+    private function holdCLISession() {
 
-	/**
-	 * @method Router::setController()
-	 * Specifiy the controller which should handle the request.
-	 *
-	 * @param IRequestController $controller
-	 * The instance of the controller.
-	 * 
-	 * @return void
-	 */
-	public function setController(IRequestController $controller) {
+        $this->updateRequest(readline('ActionRouter> '));
+        $this->routeAndExecuteRequest(false);
+        $this->holdCLISession();
+    }
 
-		if (array_key_exists((string) $controller, $this->routes)) {
+    /**
+     * @method Router::prepareAsyncErrorNotice
+     * Serve an error notice in response to a failed asynchronous request.
+     *
+     * @param Exception $e
+     * @return str
+     */
+    private function prepareAsyncErrorNotice(Exception $e) {
+    
+        $result = new AsyncResponse($this->user, [
+            'success' => false,
+            'title' => 'The server could not process your request.',
+            'message' => $e->getMessage(),
+        ]);
+        return $res->getJSONResponse();
+    }
 
-			$this->controller	=	$controller;
+    /**
+     * @method Router::prepareCLIErrorNotice
+     * Serve an error notice in response to a failed asynchronous request.
+     *
+     * @param Exception $e
+     * @return str
+     */
+    private function prepareCLIErrorNotice(Exception $e) {
+    
+        return 'Request could not be completed.'."\n".$e->getMessage()."\n";
+    }
 
-		} else {
+    /**
+     * @method Router::prepareErrorPage
+     * Create an error notice in response to a failed (synchronous) request.
+     * This method should return HTML for the error page body (that is, not
+     * including the HTML of the page template).
+     *
+     * @param Exception $e
+     * @return str
+     */
+    private function prepareErrorPage(Exception $e) {
+    
+        $ctrlr = $this->config->getDirective('controllers')
+            ->{$this->request->getLabelOfRequestedController()};
+            
+        $template = $ctrlr->errorPageTemplate;
+        $title = $ctrlr->errorPageHeading;
+        $message = $e->getMessage();
 
-			$m = __METHOD__ . ': Invalid controller.';
-			throw new Exception($m, 304);
-		}
-	}
-	
-	/**
-	 * @method Router::setControllerAction()
-	 * Specify the action to be executed by the controller.
-	 *
-	 * @param str $action
-	 * The name of the action, as defined by its method name.
-	 *
-	 * @return void
-	 */
-	public function setControllerAction($action) {
+        ob_start();
+        require_once $template;
+        return ob_get_clean();
+    }
 
-		if (in_array($action, $this->routes[(string) $this->controller])) {
+    /**
+     * @method Router::requestLogin
+     * Determine a method via which to request a login from the user.
+     *
+     * @param Request $request
+     * The instance of the Request class which represents the current request.
+     *
+     * @param UserManager $user
+     * The instance of the UserManager class which represents the current user.
+     *
+     * @return void
+     */
+    private function requestLogin(Request $request, UserManager $user) {
 
-			$this->action = $action;
+        $login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
+        $user->{ $login }();
+    }
 
-		} else {
+    /**
+     * @method Router::setController()
+     * Specifiy the controller which should handle the request.
+     *
+     * @param IRequestController $controller
+     * The instance of the controller.
+     * 
+     * @return void
+     */
+    private function setController(IRequestController $controller) {
 
-			$message = __METHOD__ . ': Action not valid for selected controller';
-			throw new Exception($message, 305);
-		}
-		
-	}
-	
-	/**
-	 * @method Router::toggleServeContentOnly()
-	 * Toggle or specify the setting which determines whether content should be
-	 * sent to the client within an HTML template or by itself, e.g. in the case
-	 * of the transmission of JSON data.
-	 *
-	 * @param bool $setting
-	 * The desired setting. Defaults to null, which toggles the current setting.
-	 */
-	public function toggleServeContentOnly($setting = null) {
+        $this->controller = $controller;
+    }
+    
+    /**
+     * @method Router::setControllerAction()
+     * Specify the action to be executed by the controller.
+     *
+     * @param str $action
+     * The name of the action, as defined by its method name.
+     *
+     * @return void
+     */
+    private function setControllerAction($action) {
 
-		if ($setting === null) {
+        $this->action = $action;
+    }
 
-			$this->serveContentOnly = ($this->serveContentOnly === false)
-				? true
-				: false;
-		}
-		else {
+    /**
+     * @method Router::updateRequest
+     * This method is intended to be used during CLI sessions when it becomes
+     * necessary to accept multiple commands, which can be treated similarly
+     * to requests. This method parses user-supplied commands and updates the
+     * router's Request instance.
+     *
+     * @param str $str
+     * The user-supplied command, e.g. "param1=val1 param2=val2"
+     *
+     * @return void
+     */
+    private function updateRequest($str) {
 
-			$this->serveContentOnly = ($setting) ? true : false;
-		}
-	}
-	
-	/**
-	 * @method loadRoutes()
-	 * Load the list of routes from the database.
-	 * TODO: Having the routes in the database prevents them from being
-	 * included in the version control. Perhaps re-implement with a config file.
-	 *
-	 * @return array
-	 * Returns an associative array of the routes, arranged via the actions'
-	 * controllers.
-	 */
-	private function loadRoutes() {
+        $params = explode(" ", $str);
+        $_GET = [];
+        foreach ($params as $param) {
 
-		$routes		=	[];
-		$actionFlds	=	[new QueryField('action')];
-		$ctrlFlds	=	[new QueryField('controller')];
+            $e = explode("=", $param);
+            $_GET[$e[0]] = $e[1];
+        }
 
-		$results	=	$this->db->select('actions')
-			->fields([
-				'table'	=>	'actions', 
-				'fields'=>	$actionFlds,
-			])
-			->fields([
-				'table'	=>	'controllers', 
-				'fields'=>	$ctrlFlds,
-			])
-			->joinTable('left', 'controllers', 'actions.controller', '=', 'controllers.id')
-			->execute()
-			->fetchAllResults();
-
-		for ($j=0 ; $j<count($results) ; $j++) {
-
-			$ctrl				=	$results[$j]['controller'];
-			$routes[$ctrl][]	=	$results[$j]['action'];
-		}
-		return $routes;
-	}
+        $this->request = new Request();
+    }
 }
 
