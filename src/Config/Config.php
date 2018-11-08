@@ -68,6 +68,34 @@ class Config {
     }
 
     /**
+     * @method Config::load
+     * Load a configuration file for access via this class.
+     *
+     * @param str $file
+     * The filename of the configuration (.conf.json) file.
+     *
+     * @return void
+     */
+    public function load($file) {
+
+        $settings = $this->validateSettings(
+            json_decode(file_get_contents($file))
+        );
+
+        foreach ($settings as $sectionName => $section) {
+
+            if (!property_exists($this, $sectionName)) {
+
+                $message = __METHOD__.': Invalid property: ';
+                $message .= $sectionName;
+                throw new Exception($message);
+            }
+
+            $this->{$sectionName} = $section;
+        }
+    }
+
+    /**
      * @method Config::setConfigurationFromFile
      * Configure the router by loading directives from the .ini file.
      *
@@ -117,34 +145,6 @@ class Config {
         define('CTRL_QUERY_STR', $this->getDirective('ctrl_query_str'));
         define('ACTION_QUERY_STR', $this->getDirective('action_query_str'));
         define('ASYNC_POST_FLAG', $this->getDirective('async_post_flag'));
-    }
-
-    /**
-     * @method Config::load
-     * Load a configuration file for access via this class.
-     *
-     * @param str $file
-     * The filename of the configuration (.conf.json) file.
-     *
-     * @return void
-     */
-    private function load($file) {
-
-        $settings = $this->validateSettings(
-            json_decode(file_get_contents($file))
-        );
-
-        foreach ($settings as $sectionName => $section) {
-
-            if (!property_exists($this, $sectionName)) {
-
-                $message = __METHOD__.': Invalid property: ';
-                $message .= $sectionName;
-                throw new Exception($message);
-            }
-
-            $this->{$sectionName} = $section;
-        }
     }
 
     /**
