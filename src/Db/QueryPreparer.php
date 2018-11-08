@@ -11,241 +11,241 @@ namespace JackBradford\ActionRouter\Db;
 
 class MySqlQueryPreparer implements IQueryPreparer {
 
-	private $params = [];
+    private $params = [];
 
-	/**
-	 * @method QueryPreparer::prepareDeleteStmt()
-	 * Prepare a mySQL DELETE statement.
-	 *
-	 * @param obj $options
-	 * An object containing the specifications of the query.
-	 *
-	 * @param str $options->baseTable
-	 * The table from which to delete records.
-	 *
-	 * @param array $options->conditions
-	 * The list of conditions to apply to the query.
-	 *
-	 * @return PreparedStatement
-	 */
-	public function prepareDeleteStmt($options) {
+    /**
+     * @method QueryPreparer::prepareDeleteStmt()
+     * Prepare a mySQL DELETE statement.
+     *
+     * @param obj $options
+     * An object containing the specifications of the query.
+     *
+     * @param str $options->baseTable
+     * The table from which to delete records.
+     *
+     * @param array $options->conditions
+     * The list of conditions to apply to the query.
+     *
+     * @return PreparedStatement
+     */
+    public function prepareDeleteStmt($options) {
 
-		$baseTable	=	$options->baseTable;
-		$conditions	=	$options->conditions;
-		$this->resetParams();
+        $baseTable = $options->baseTable;
+        $conditions = $options->conditions;
+        $this->resetParams();
 
-		$query		=	'DELETE FROM ' . $baseTable;
+        $query = 'DELETE FROM ' . $baseTable;
 
-		if (count($conditions) > 0) {
+        if (count($conditions) > 0) {
 
-			$query .= ' WHERE '.$this->conditionsToQuerySubstring($conditions);
-		}
+            $query .= ' WHERE '.$this->conditionsToQuerySubstring($conditions);
+        }
 
-		return new PreparedStatement($query, $this->params);
-	}
+        return new PreparedStatement($query, $this->params);
+    }
 
-	/**
-	 * @method QueryPreparer::prepareInsertStmt()
-	 * Prepare a mySQL INSERT statement.
-	 *
-	 * @param obj $options
-	 * An object containing the specifications of the query.
-	 *
-	 * @param str $options->baseTable
-	 * The table in which to insert record(s).
-	 *
-	 * @param array $options->fields
-	 * The fields, and thier data, to add to the record(s).
-	 *
-	 * @return PreparedStatement
-	 */
-	public function prepareInsertStmt($options) {
-		
-		$this->resetParams();
+    /**
+     * @method QueryPreparer::prepareInsertStmt()
+     * Prepare a mySQL INSERT statement.
+     *
+     * @param obj $options
+     * An object containing the specifications of the query.
+     *
+     * @param str $options->baseTable
+     * The table in which to insert record(s).
+     *
+     * @param array $options->fields
+     * The fields, and thier data, to add to the record(s).
+     *
+     * @return PreparedStatement
+     */
+    public function prepareInsertStmt($options) {
 
-		$query	=	'INSERT INTO ' . $options->baseTable
-				.	$this->createFieldsClauseForInsertQuery($options->fields)
-				.	$this->createValuesClauseForInsertQuery($options->fields);
+        $this->resetParams();
 
-		return new PreparedStatement($query, $this->params);
-	}
+        $query = 'INSERT INTO ' . $options->baseTable
+               . $this->createFieldsClauseForInsertQuery($options->fields)
+               . $this->createValuesClauseForInsertQuery($options->fields);
 
-	/**
-	 * @method QueryPreparer::prepareSelectStmt()
-	 * Prepare a mySQL SELECT statement.
-	 *
-	 * @param obj $options
-	 * An object containing the specifications of the query.
-	 *
-	 * @param str $options->baseTable
-	 * The table from which to select record(s).
-	 *
-	 * @param array $options->fields
-	 * The fields, and their aliases, to select.
-	 *
-	 * @param array $options->joins
-	 * A list of objects which represent tables to be joined.
-	 *
-	 * @param array $options->conditions
-	 * A list of objects which represent conditions to apply to the query.
-	 *
-	 * @param array $options->orderBy
-	 * A list of objects which represent sort directives.
-	 *
-	 * @return PreparedStatement
-	 */
-	public function prepareSelectStmt($options) {
+        return new PreparedStatement($query, $this->params);
+    }
 
-		$this->resetParams();
+    /**
+     * @method QueryPreparer::prepareSelectStmt()
+     * Prepare a mySQL SELECT statement.
+     *
+     * @param obj $options
+     * An object containing the specifications of the query.
+     *
+     * @param str $options->baseTable
+     * The table from which to select record(s).
+     *
+     * @param array $options->fields
+     * The fields, and their aliases, to select.
+     *
+     * @param array $options->joins
+     * A list of objects which represent tables to be joined.
+     *
+     * @param array $options->conditions
+     * A list of objects which represent conditions to apply to the query.
+     *
+     * @param array $options->orderBy
+     * A list of objects which represent sort directives.
+     *
+     * @return PreparedStatement
+     */
+    public function prepareSelectStmt($options) {
 
-		$query	=	'SELECT '
-				.	$this->createFieldsClauseForSelectQuery($options->fields)
-				.	' FROM ' . $options->baseTable . ' '
-				.	$this->createJoinClauseForSelectQuery($options->joins)
-				.	$this->createWhereClauseForSelectQuery($options->conditions)
-				.	$this->createOrderByClauseForSelectQuery($options->orderBy);
+        $this->resetParams();
 
-		return new PreparedStatement($query, $this->params);
-	}
+        $query = 'SELECT '
+               . $this->createFieldsClauseForSelectQuery($options->fields)
+               . ' FROM ' . $options->baseTable . ' '
+               . $this->createJoinClauseForSelectQuery($options->joins)
+               . $this->createWhereClauseForSelectQuery($options->conditions)
+               . $this->createOrderByClauseForSelectQuery($options->orderBy);
 
-	/**
-	 * @method QueryPreparer::prepareUpdateStmt()
-	 * Prepare a mySQL UPDATE statement.
-	 *
-	 * @param obj $options
-	 * An object containing the specifications of the query.
-	 *
-	 * @param str $options->baseTable
-	 * The table in which to update record(s).
-	 *
-	 * @param array $options->fields
-	 * The fields, and their values, to update.
-	 *
-	 * @param array $options->conditions
-	 * A list of objects which represent conditions to apply to the query.
-	 *
-	 * @return PreparedStatement
-	 */
-	public function prepareUpdateStmt($options) {
+        return new PreparedStatement($query, $this->params);
+    }
 
-		$this->resetParams();
-		$query	=	'UPDATE ' . $options->baseTable . ' SET ';
+    /**
+     * @method QueryPreparer::prepareUpdateStmt()
+     * Prepare a mySQL UPDATE statement.
+     *
+     * @param obj $options
+     * An object containing the specifications of the query.
+     *
+     * @param str $options->baseTable
+     * The table in which to update record(s).
+     *
+     * @param array $options->fields
+     * The fields, and their values, to update.
+     *
+     * @param array $options->conditions
+     * A list of objects which represent conditions to apply to the query.
+     *
+     * @return PreparedStatement
+     */
+    public function prepareUpdateStmt($options) {
 
-		// Add fields/values to query string.
-		foreach ($options->fields as $field => $value) {
+        $this->resetParams();
+        $query = 'UPDATE ' . $options->baseTable . ' SET ';
 
-			$query	.=	"$field = $value, ";
-		}
-		$query	=	substr($query, 0, -2); // Removes trailing comma.
+        // Add fields/values to query string.
+        foreach ($options->fields as $field => $value) {
 
-		// Add conditions to query string.
-		if (count($options->conditions) > 0) {
+            $query .= "$field = $value, ";
+        }
+        $query = substr($query, 0, -2); // Removes trailing comma.
 
-			$query	.=	' WHERE ';
-			$query	.=	$this->conditionsToQuerySubstring();
-		}
+        // Add conditions to query string.
+        if (count($options->conditions) > 0) {
 
-		return new PreparedStatement($query, $this->params);
-	}
+            $query .= ' WHERE ';
+            $query .= $this->conditionsToQuerySubstring();
+        }
 
-	private function conditionsToQuerySubstring($conditions) {
+        return new PreparedStatement($query, $this->params);
+    }
 
-		$q_substr	=	'';
+    private function conditionsToQuerySubstring($conditions) {
 
-		foreach ($conditions as $c) {
+        $q_substr = '';
 
-			$q_substr		.=	"$c->conjunction $c->field $c->operator ? ";
+        foreach ($conditions as $c) {
 
-			if (is_array($c->value)) {
+            $q_substr .=  "$c->conjunction $c->field $c->operator ? ";
 
-				$m	=	__METHOD__ . ' Arrays are not valid values for conditions.';
-				throw new Exception($m);
-			}
+            if (is_array($c->value)) {
 
-			$this->params[]	=	$c->value;
-		}
-		return $q_substr;
-	}
+                $m = __METHOD__ . ' Arrays are not valid values for conditions.';
+                throw new Exception($m);
+            }
 
-	private function createFieldsClauseForInsertQuery($fields) {
+            $this->params[] = $c->value;
+        }
+        return $q_substr;
+    }
 
-		$query	=	' (';
-		foreach ($fields as $field) {
+    private function createFieldsClauseForInsertQuery($fields) {
 
-			$query	.=	$field->field . ', ';
-		}
-		return substr($query, 0, -2) . ') ';
-	}
+        $query = ' (';
+        foreach ($fields as $field) {
 
-	private function createFieldsClauseForSelectQuery($fields) {
+            $query .= $field->field . ', ';
+        }
+        return substr($query, 0, -2) . ') ';
+    }
 
-		$query = '';
+    private function createFieldsClauseForSelectQuery($fields) {
 
-		foreach ($fields as $table => $fields) {
+        $query = '';
 
-			foreach ($fields as $field) {
+        foreach ($fields as $table => $fields) {
 
-				$query	.=	"$table.$field->field ";
-				if ($field->hasAlias()) {
+            foreach ($fields as $field) {
 
-					$query	.=	"as $field->alias";
-				}
-				$query	.=	', ';
-			}
-		}
-		return substr($query, 0, -2);
-	}
+                $query .= "$table.$field->field ";
+                if ($field->hasAlias()) {
 
-	private function createJoinClauseForSelectQuery($joins) {
+                    $query .= "as $field->alias";
+                }
+                $query .= ', ';
+            }
+        }
+        return substr($query, 0, -2);
+    }
 
-		$query = '';
-		foreach ($joins as $join) {
+    private function createJoinClauseForSelectQuery($joins) {
 
-			$query	.=	"$join->type JOIN $join->table ON " .
-						"$join->on $join->operator $join->compareTo ";
-		}
-		return $query;
-	}
+        $query = '';
+        foreach ($joins as $join) {
 
-	private function createOrderByClauseForSelectQuery($orderBy) {
+            $query .= "$join->type JOIN $join->table ON " .
+                      "$join->on $join->operator $join->compareTo ";
+        }
+        return $query;
+    }
 
-		if (count($orderBy) > 0) {
+    private function createOrderByClauseForSelectQuery($orderBy) {
 
-			$query	=	'ORDER BY ';
-			foreach ($orderBy as $o) {
+        if (count($orderBy) > 0) {
 
-				$query	.=	"$o->field $o->direction, ";
-			}
-			$query	=	substr($query, 0, -2); // Removes trailing comma.
-		}
-		return (isset($query)) ? $query : '';
-	}
+            $query = 'ORDER BY ';
+            foreach ($orderBy as $o) {
 
-	private function createValuesClauseForInsertQuery($fields) {
+                $query .= "$o->field $o->direction, ";
+            }
+            $query = substr($query, 0, -2); // Removes trailing comma.
+        }
+        return (isset($query)) ? $query : '';
+    }
 
-		$query	=	'VALUES (';
-		foreach ($fields as $field) {
+    private function createValuesClauseForInsertQuery($fields) {
 
-			$query	.=	'?,';
-			$this->params[]	=	$field->value;
-		}
-		return substr($query, 0, -1) . ') ';
-	}
+        $query = 'VALUES (';
+        foreach ($fields as $field) {
 
-	private function createWhereClauseForSelectQuery($conditions) {
+            $query .= '?,';
+            $this->params[] = $field->value;
+        }
+        return substr($query, 0, -1) . ') ';
+    }
 
-		$query	=	'';
-		if (count($conditions) > 0) {
+    private function createWhereClauseForSelectQuery($conditions) {
 
-			$query	.=	'WHERE '
-					.	$this->conditionsToQuerySubstring($conditions);
-		}
-		return $query;
-	}
+        $query = '';
+        if (count($conditions) > 0) {
 
-	private function resetParams() {
+            $query .= 'WHERE '
+                   . $this->conditionsToQuerySubstring($conditions);
+        }
+        return $query;
+    }
 
-		$this->params	=	[];
-	}
+    private function resetParams() {
+
+        $this->params = [];
+    }
 }
 
