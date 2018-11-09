@@ -105,13 +105,13 @@ class Db {
         if (count($this->conditions) > 0 && $conjunction === null) {
 
             $message = __METHOD__ . ': Missing conjunction.';
-            throw new Exception($message);
+            throw new InvalidArgumentException($message);
         }
 
         if (is_array($value)) {
 
             $m = __METHOD__ . ' $value argument may not be an array.';
-            throw new Exception($m);
+            throw new InvalidArgumentException($m);
         }
 
         if (count($this->conditions) === 0) $conjunction = null;
