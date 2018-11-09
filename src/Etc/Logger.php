@@ -1,6 +1,6 @@
 <?php
 /**
- * @file logger.php
+ * @file Logger.php
  * This file provides an interface through which errors and other messages
  * can be recorded.
  *
@@ -12,89 +12,76 @@
  */
 namespace JackBradford\ActionRouter\Etc;
 
-class Logger {
+class Logger implements ILogger {
 
-	private $db;
-	private $e;
+    protected $db;
+    protected $e;
 
-	/**
-	 * @method Logger::__construct()
-	 *
-	 * @param Db $db
-	 * An instance of the database-abstraction layer.
-	 *
-	 * @return Logger
-	 * Returns an instance of this class, initialized with access to a 
-	 * database.
-	 */
-	public function __construct(Db $db) {
+    /**
+     * @method Logger::__construct()
+     *
+     * @param Object $db
+     * An instance of the database-abstraction layer.
+     *
+     * @return Logger
+     * Returns an instance of this class, initialized with access to a
+     * database.
+     */
+    public function __construct($db = null) {
 
-		$this->db	=	$db;
-	}
+        if (is_object($db) || is_null($db)) $this->db = $db;
+        else {
 
-	/**
-	 * @method Logger::logError()
-	 * Log an error from an exception.
-	 *
-	 * @param Exception $e, str
-	 * The exception representing the error to be logged. Also accepts a string,
-	 * in which case this method will simply record that string.
-	 *
-	 * @return void
-	 * This method always logs the Exception message (or given string) to the log
-	 * file defined in config.php. It will also log all Exceptions, including
-	 * message, error code, source file, line, and stack trace in a database entry.
-	 */
-	public function logError($e) {
+            $message = __METHOD__ . ': Argument $db must be an instance of a
+                database-abstraction class, or must be NULL.';
+            throw new InvalidArgumentException($message);
+        }
+    }
 
-		if (!is_object($e) && !is_string($e)) {
+    /**
+     * @method Logger::logError()
+     * Log an error from an exception.
+     *
+     * @param Exception $e, str
+     * The exception representing the error to be logged. Also accepts a string,
+     * in which case this method will simply record that string.
+     *
+     * @return void
+     * This method always logs the Exception message (or given string) to the log
+     * file defined in config.php. It will also log all Exceptions, including
+     * message, error code, source file, line, and stack trace in a database entry.
+     */
+    public function logError($e) {
 
-			$m	=	__METHOD__ . ' expects either an Exception or a String.';
-			throw new InvalidArgumentException($m, 110);
-		}
+        if (!is_object($e) && !is_string($e)) {
 
-		$this->e	=	$e;
-		$this->addEntryToLogFile();
-		if (is_object($this->e)) $this->addEntryToDatabase();
-	}
+            $m  =   __METHOD__ . ' expects either an Exception or a String.';
+            throw new InvalidArgumentException($m, 110);
+        }
 
-	private function addEntryToLogFile() {
+        $this->e    =   $e;
+        $this->addEntryToLogFile();
+        if (is_object($this->e)) $this->addEntryToDatabase();
+    }
 
-		if (is_string($this->e)) error_log($this->e, 0);
-		else {
-			$m	=	$this->e->getMessage() . "\n Trace:\n";
-			$m	.=	$this->e->getTraceAsString();
-			error_log($m, 0);
-		}
-	}
-	
-	private function addEntryToDatabase() {
+    /**
+     * @method Logger::addEntryToDatabase
+     * This is an optional method. It will do nothing unless extended. To
+     * enable database logging, extend this class and pass an instance to
+     * your instance of Router.
+     *
+     * @return void
+     */
+    protected function addEntryToDatabase() {}
 
-		$this->db->insertRecord('error_log')
-			->fields([
-				
-				'fields'	=>	$this->createDatabaseFields([
-			
-					'code'		=>	$this->e->getCode(),
-					'message'	=>	$this->e->getMessage(),
-					'src_file'	=>	$this->e->getFile(),
-					'line'		=>	$this->e->getLine(),
-					'trace'		=>	$this->e->getTraceAsString(),
-				]),
-			])
-			->execute();
-	}
+    protected function addEntryToLogFile() {
 
-	private function createDatabaseFields(array $values) {
-
-		$fields	=	[];
-
-		foreach ($values as $field => $value) {
-
-			$fields[]	=	new QueryField($field, null, $value);
-		}
-
-		return $fields;
-	}
+        if (is_string($this->e)) error_log($this->e, 0);
+        else {
+            $m  =   $this->e->getMessage() . "\n Trace:\n";
+            $m  .=  $this->e->getTraceAsString();
+            error_log($m, 0);
+        }
+    }
 }
 

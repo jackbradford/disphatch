@@ -27,10 +27,6 @@ class RoutingDIContainer {
      * An instance of the Request class, which represents the initial request
      * sent by the client.
      *
-     * @param Logger $logger
-     * An instance of the Logger class, which is responsible for persisting
-     * errors and other messages to the database and log file(s).
-     *
      * @param UserManager $user
      * An instance of the UserManager class, which represents the currently
      * logged-in user.
@@ -46,7 +42,7 @@ class RoutingDIContainer {
     public function __construct(
         Config $config,
         Request $req,
-        Logger $logger,
+        ILogger $logger,
         UserManager $user,
         $db = null
     ) {
@@ -55,11 +51,16 @@ class RoutingDIContainer {
         $this->request = $req;
         $this->logger = $logger;
         $this->user = $user;
-		if (is_object($db)) $this->db = $db;
-		else {
-			$message = 'Expects an object for argument $db.';
-			throw new InvalidArgumentException($message);
-		}
+        if ($this->validateDb($db)) $this->db = $db;
+        else {
+            $message = 'Expects an object for argument $db.';
+            throw new InvalidArgumentException($message);
+        }
+    }
+
+    private function validateDb($db) {
+
+        return (is_object($db) || is_null($db)) ? true : false;
     }
 }
 

@@ -84,9 +84,16 @@ class Router extends Output {
      * @param str $configPath
      * The path to the configuration file.
      *
+     * @param ILogger $logger
+     * An instance of a logger class which implements the ILogger interface.
+     *
+     * @param object $db
+     * An instance of a database-abstraction class. This will be supplied to
+     * each request-handling controller.
+     *
      * @return Router
      */
-    public static function init($configPath) {
+    public static function init($configPath, ILogger $logger = null, $db = null) {
 
         try {
 
@@ -94,6 +101,7 @@ class Router extends Output {
             $config->setConfigurationFromFile($configPath);
             $request = new Request();
             $user = new UserManager($request, $config);
+            $logger = (is_null($logger)) ? new Logger() : $logger;
 
             if (!$user->isAuthorizedToMakeRequest()) {
 
@@ -102,9 +110,7 @@ class Router extends Output {
                 throw new NotLoggedInException($message);
             }
 
-            $db = DbFactory::getDbInst();
-            $logger = new Logger($db);
-            $dc = new RoutingDIContainer($config, $request, $db, $logger, $user);
+            $dc = new RoutingDIContainer($config, $request, $logger, $user, $db);
 
             return new Router($dc);
         }
