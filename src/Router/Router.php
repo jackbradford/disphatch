@@ -42,6 +42,42 @@ class Router extends Output {
     protected $user;
 
     /**
+     * @method Router::__construct()
+     * Construct a new instance of the Router class, which is responsible for
+     * inspecting the request, identifying and validating the requested action,
+     * calling the appropriate controller method, and returning the result in
+     * the requested format.
+     *
+     * @see Router::init
+     * This class is instantiated via the Factory method. To create an instance,
+     * use Router::init().
+     *
+     * @param RoutingDIContainer $dc
+     * An instance of the Routing Dependency Injection Container, which contains
+     * a Request instance, Logger instance, Db Abstraction instance, and a User Management
+     * instance.
+     */
+    public function __construct(RoutingDIContainer $dc) {
+
+        try {
+
+            $this->dc = $dc;
+            $this->config = $dc->config;
+            $this->request = $dc->request;
+            $this->logger = $dc->logger;
+            $this->db = $dc->db;
+            $this->user = $dc->user;
+            $this->routes = $this->loadRoutes();
+        }
+        catch (Exception $e) {
+
+            $dc->logger->logError($e);
+            $m = 'Could not construct Router. '.$e->getMessage();
+            throw new Exception($m, 0, $e);
+        }
+    }
+
+    /**
      * @method Router::init()
      * Initialize the Router before handling the current request.
      *
@@ -94,7 +130,7 @@ class Router extends Output {
      * synchronous.
      *
      * @return void
-     * Emits a JSON object (or the HTML necessary to run the client 
+     * Emits a JSON object (or the HTML necessary to run the client
      * application).
      */
     public function routeAndExecuteRequest($serveClientAppOnSync=true) {
@@ -109,7 +145,7 @@ class Router extends Output {
 
             if (!$this->user->authorize($ctrlr.'::'.$this->action)) {
 
-                $m = __METHOD__.': User does not have sufficient privileges 
+                $m = __METHOD__.': User does not have sufficient privileges
                      to make this request.';
                 throw new Exception($m);
             }
@@ -121,7 +157,7 @@ class Router extends Output {
             $this->setResponse($response);
             $this->serveContent();
 
-        } 
+        }
         catch (Exception $e) {
 
             $this->logger->logError($e);
@@ -133,8 +169,8 @@ class Router extends Output {
      * @method Router::callClientApp()
      * In some instances, depending on configuration, it may be
      * advantageous to serve the client app itself rather than the data
-     * requested. Via such configuration, the same URL can be used both to 
-     * resolve the initial request (by serving the client app only) and 
+     * requested. Via such configuration, the same URL can be used both to
+     * resolve the initial request (by serving the client app only) and
      * to deliver the data necessary in that context when called subsequently
      * (and asynchronously) by that client app.
      *
@@ -169,7 +205,7 @@ class Router extends Output {
 
         if (!$this->request->isFromCLI()) return;
         if (!$this->user->isLoggedIn()) {
-            
+
             $this->config->parseArgvIntoGet();
             $this->user->login([
                 'un' => $_GET['un'],
@@ -179,7 +215,7 @@ class Router extends Output {
         }
         $this->holdCLISession();
     }
-    
+
     /**
      * @method Router::getActionName()
      * Get the name of the currently-set action which will/has been run by the
@@ -192,7 +228,7 @@ class Router extends Output {
 
         return $this->action;
     }
-    
+
     /**
      * @method Router::getControllerName()
      * Get the name of the currently-set controller which will/has been used to
@@ -271,47 +307,11 @@ class Router extends Output {
     }
 
     /**
-     * @method Router::__construct()
-     * Construct a new instance of the Router class, which is responsible for
-     * inspecting the request, identifying and validating the requested action,
-     * calling the appropriate controller method, and returning the result in
-     * the requested format.
-     *
-     * @see Router::init
-     * This class is instantiated via the Factory method. To create an instance,
-     * use Router::init().
-     *
-     * @param RoutingDIContainer $dc
-     * An instance of the Routing Dependency Injection Container, which contains
-     * a Request instance, Logger instance, Db Abstraction instance, and a User Management
-     * instance.
-     */
-    private function __construct(RoutingDIContainer $dc) {
-
-        try {
-    
-            $this->dc = $dc;
-            $this->config = $dc->config;
-            $this->request = $dc->request;
-            $this->logger = $dc->logger;
-            $this->db = $dc->db;
-            $this->user = $dc->user;
-            $this->routes = $this->loadRoutes();
-        }
-        catch (Exception $e) {
-
-            $dc->logger->logError($e);
-            $m = 'Could not construct Router. '.$e->getMessage();
-            throw new Exception($m, 0, $e);
-        }
-    }
-
-    /**
      * @method callRequestedAction()
      * Call the action specified in the request via the appropriate controller.
      *
      * @return ControllerResponse
-     * Returns the contents returned by the controller method specified in the 
+     * Returns the contents returned by the controller method specified in the
      * request.
      */
     private function callRequestedAction() {
@@ -354,7 +354,7 @@ class Router extends Output {
      * @return str
      */
     private function prepareAsyncErrorNotice(Exception $e) {
-    
+
         $result = new AsyncResponse($this->user, [
             'success' => false,
             'title' => 'The server could not process your request.',
@@ -371,7 +371,7 @@ class Router extends Output {
      * @return str
      */
     private function prepareCLIErrorNotice(Exception $e) {
-    
+
         return 'Request could not be completed.'."\n".$e->getMessage()."\n";
     }
 
@@ -385,10 +385,10 @@ class Router extends Output {
      * @return str
      */
     private function prepareErrorPage(Exception $e) {
-    
+
         $ctrlr = $this->config->getDirective('controllers')
             ->{$this->request->getLabelOfRequestedController()};
-            
+
         $template = $ctrlr->errorPageTemplate;
         $title = $ctrlr->errorPageHeading;
         $message = $e->getMessage();
@@ -422,14 +422,14 @@ class Router extends Output {
      *
      * @param IRequestController $controller
      * The instance of the controller.
-     * 
+     *
      * @return void
      */
     private function setController(IRequestController $controller) {
 
         $this->controller = $controller;
     }
-    
+
     /**
      * @method Router::setControllerAction()
      * Specify the action to be executed by the controller.
