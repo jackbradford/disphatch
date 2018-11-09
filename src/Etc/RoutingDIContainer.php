@@ -27,9 +27,6 @@ class RoutingDIContainer {
      * An instance of the Request class, which represents the initial request
      * sent by the client.
      *
-     * @param Db $db
-     * An instance of the Db class, which represents a connection to a database.
-     *
      * @param Logger $logger
      * An instance of the Logger class, which is responsible for persisting
      * errors and other messages to the database and log file(s).
@@ -38,21 +35,31 @@ class RoutingDIContainer {
      * An instance of the UserManager class, which represents the currently
      * logged-in user.
      *
+     * @param Object $db
+     * An instance of a Database abstraction class, which represents a
+     * connection to a database. This is optional, and can be used to supply
+     * the request-handling controllers with a database connection such that
+     * it's not necessary to create one in each method or in each controller.
+     *
      * @return RoutingDIContainer
      */
     public function __construct(
         Config $config,
         Request $req,
-        Db $db,
         Logger $logger,
-        UserManager $user
+        UserManager $user,
+        $db = null
     ) {
-    
+
         $this->config = $config;
         $this->request = $req;
-        $this->db = $db;
         $this->logger = $logger;
         $this->user = $user;
+		if (is_object($db)) $this->db = $db;
+		else {
+			$message = 'Expects an object for argument $db.';
+			throw new InvalidArgumentException($message);
+		}
     }
 }
 
