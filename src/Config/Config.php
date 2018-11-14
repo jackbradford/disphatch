@@ -59,9 +59,13 @@ class Config {
 
         if (!property_exists($this, $section)) {
 
-            $message = __METHOD__.': Invalid property: ';
-            $message .= $sectionName;
-            throw new Exception($message);
+            $message = __METHOD__.': Invalid property: '.$section;
+            throw new InvalidArgumentException($message);
+        }
+
+        if (!isset($this->{$section})) {
+
+            throw new InvalidArgumentException('Directive is not set.');
         }
 
         return $this->{$section};
@@ -86,8 +90,7 @@ class Config {
 
             if (!property_exists($this, $sectionName)) {
 
-                $message = __METHOD__.': Invalid property: ';
-                $message .= $sectionName;
+                $message = __METHOD__.': Invalid property: '.$sectionName;
                 throw new Exception($message);
             }
 
