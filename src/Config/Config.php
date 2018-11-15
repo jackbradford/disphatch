@@ -25,11 +25,12 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 class Config {
 
     private $action_query_str;
-    private $async_post_flag;
-    private $dbs;
-    private $controllers;
     private $ctrl_query_str;
+    private $async_post_flag;
     private $default_action;
+    private $client_apps;
+    private $controllers;
+    private $dbs;
     private $login_page_path;
     private $permissions;
     private $templates;
@@ -221,8 +222,8 @@ class Config {
 
         if (!is_object($settings)) {
 
-            $m = __METHOD__ . ': Expects object. Check file location and 
-            verify JSON is valid.';
+            $m = __METHOD__ . ': Expects object. '
+                . 'Check file location and verify JSON is valid.';
             throw new \Exception($m);
         }
 
