@@ -56,7 +56,7 @@ class Config {
      * Returns the value (or array) of the specified directive.
      *
      */
-    public static function getDirective($section) {
+    public function getDirective($section) {
 
         if (!property_exists($this, $section)) {
 
