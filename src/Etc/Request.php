@@ -132,7 +132,7 @@ class Request {
         if (!array_key_exists($ctrl, CONTROLLERS)) {
             
             $m = __METHOD__ . ': Invalid controller requested.';
-            throw new Exception($m);
+            throw new \Exception($m);
         }
 
         return $ctrl;
@@ -205,14 +205,14 @@ class Request {
 
         if (!isset($_POST[$postParam])) {
         
-            throw new Exception('JSON not found.');
+            throw new \Exception('JSON not found.');
         }
 
         $json = json_decode($_POST[$postParam], true);
 
         if (is_null($json) || !$json) {
 
-            throw new Exception('JSON decode error: ' . json_last_error_msg());
+            throw new \Exception('JSON decode error: ' . json_last_error_msg());
         }
 
         return $json;

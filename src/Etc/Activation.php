@@ -42,7 +42,7 @@ class Activation {
 
         if (!$this->validateConstructorInput($data)) {
 
-            throw new Exception(__METHOD__ . ': Missings argument(s).');
+            throw new \Exception(__METHOD__ . ': Missings argument(s).');
         }
 
         $this->code = $data['code'];

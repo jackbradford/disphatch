@@ -60,12 +60,12 @@ class Config {
         if (!property_exists($this, $section)) {
 
             $message = __METHOD__.': Invalid property: '.$section;
-            throw new InvalidArgumentException($message);
+            throw new \InvalidArgumentException($message);
         }
 
         if (!isset($this->{$section})) {
 
-            throw new InvalidArgumentException('Directive is not set.');
+            throw new \InvalidArgumentException('Directive is not set.');
         }
 
         return $this->{$section};
@@ -91,7 +91,7 @@ class Config {
             if (!property_exists($this, $sectionName)) {
 
                 $message = __METHOD__.': Invalid property: '.$sectionName;
-                throw new Exception($message);
+                throw new \Exception($message);
             }
 
             $this->{$sectionName} = $section;
@@ -223,7 +223,7 @@ class Config {
 
             $m = __METHOD__ . ': Expects object. Check file location and 
             verify JSON is valid.';
-            throw new Exception($m);
+            throw new \Exception($m);
         }
 
         return $settings;

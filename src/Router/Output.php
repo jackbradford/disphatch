@@ -57,7 +57,7 @@ class Output {
         if (!is_string($metaDesc)) {
 
             $m = __METHOD__ . ' expects $metaDesc as string.';
-            throw new InvalidArgumentException($m, 406);
+            throw new \InvalidArgumentException($m, 406);
         }
 
         $this->metaDesc = htmlspecialchars($metaDesc);
@@ -85,7 +85,7 @@ class Output {
 
             $m = __METHOD__ . " expects the \$info array to include 'title', ";
             $m .= "'metaDesc', and 'section' nodes.";
-            throw new InvalidArgumentException($m, 408);
+            throw new \InvalidArgumentException($m, 408);
         }
 
         $this->setTitle($info['title']);
@@ -110,7 +110,7 @@ class Output {
         if (!is_string($section)) {
 
             $m = __METHOD__ . ' expects $section as string.';
-            throw new InvalidArgumentException($m, 407);
+            throw new \InvalidArgumentException($m, 407);
         }
 
         $this->section = htmlspecialchars($section);
@@ -132,7 +132,7 @@ class Output {
         if (!is_string($templatePath)) {
 
             $m = __METHOD__ . ' expects argument $templatePath as string.';
-            throw new InvalidArgumentException($m, 404);
+            throw new \InvalidArgumentException($m, 404);
         }
 
         $this->templatePath = $templatePath;
@@ -154,7 +154,7 @@ class Output {
         if (!is_string($title)) {
 
             $m = __METHOD__ . ' expects $title as string.';
-            throw new InvalidArgumentException($m, 405);
+            throw new \InvalidArgumentException($m, 405);
         }
 
         $this->title = htmlspecialchars($title);
@@ -174,7 +174,7 @@ class Output {
         if (empty($this->response)) {
 
             $m = __METHOD__ . ': No content found.';
-            throw new BadMethodCallException($m, 408);
+            throw new \BadMethodCallException($m, 408);
         }
 
         // TODO flush which content?
@@ -196,13 +196,13 @@ class Output {
         if (empty($this->templatePath)) {
 
             $m = __METHOD__ . ': No template path found.';
-            throw new BadMethodCallException($m, 401);
+            throw new \BadMethodCallException($m, 401);
         }
 
         if (empty($this->content)) {
 
             $m = __METHOD__ . ': No content found.';
-            throw new BadMethodCallException($m, 402);
+            throw new \BadMethodCallException($m, 402);
         }
 
         require_once $this->templatePath;

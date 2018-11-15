@@ -11,5 +11,5 @@ namespace JackBradford\ActionRouter\Etc\Exceptions;
  * a user attempts to access a system function which requires authorization.
  *
  */
-class NotLoggedInException extends Exception {}
+class NotLoggedInException extends \Exception {}
 

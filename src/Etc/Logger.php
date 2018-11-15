@@ -34,7 +34,7 @@ class Logger implements ILogger {
 
             $message = __METHOD__ . ': Argument $db must be an instance of a
                 database-abstraction class, or must be NULL.';
-            throw new InvalidArgumentException($message);
+            throw new \InvalidArgumentException($message);
         }
     }
 
@@ -56,7 +56,7 @@ class Logger implements ILogger {
         if (!is_object($e) && !is_string($e)) {
 
             $m  =   __METHOD__ . ' expects either an Exception or a String.';
-            throw new InvalidArgumentException($m, 110);
+            throw new \InvalidArgumentException($m, 110);
         }
 
         $this->e    =   $e;

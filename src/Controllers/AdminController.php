@@ -173,7 +173,7 @@ class AdminController extends Controller implements IRequestController {
         $activation = $user->getActivation();
         if (!$user->completeActivation($activation->getDetails()->code)) {
 
-            throw new Exception(__METHOD__ . ': Could not activate user.');
+            throw new \Exception(__METHOD__ . ': Could not activate user.');
         }
     }
 }

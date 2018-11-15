@@ -109,14 +109,14 @@ class User {
 
         if (!EloquentActivation::exists($user)) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': No activation record exists for this user.'
             );
         }
 
         if (!EloquentActivation::complete($user, $code)) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': Activation failed. Sentinel returned false.'
             );
         }
@@ -136,7 +136,7 @@ class User {
 
         if (EloquentActivation::remove($user) !== true) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': Could not remove activation record for user.'
             );
         }
@@ -173,7 +173,7 @@ class User {
 
         if (!Sentinel::update($this->sentinelUser, $credentials)) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': Could not update user.'
             );
         }

@@ -157,7 +157,7 @@ class AsyncResponse {
         if (!isset($args['success']) || !is_bool($args['success'])) {
 
             $m = __METHOD__.': Argument for success status expects boolean.';
-            throw new Exception($m);
+            throw new \Exception($m);
         } 
         return $args['success'];
     }

@@ -122,7 +122,7 @@ class ControllerResponse {
 
         if (!is_bool($success)) {
 
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 __CLASS__ . ': $success expects boolean. '
                 . gettype($success) . ' given.'
             );
@@ -142,7 +142,7 @@ class ControllerResponse {
 
         if (!is_string($str)) {
 
-            throw new InvalidArgumentException(
+            throw new \InvalidArgumentException(
                 'String expected. ' . gettype($str) . ' given.'
             );
         }

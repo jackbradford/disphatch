@@ -13,5 +13,5 @@ namespace JackBradford\ActionRouter\Etc\Exceptions;
  * TODO: Determine if this exception is used in the router, or if it came from
  * its original parent application, ALE_IM.
  */
-class SubmitItemException extends Exception {}
+class SubmitItemException extends \Exception {}
 

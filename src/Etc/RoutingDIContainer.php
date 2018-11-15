@@ -54,7 +54,7 @@ class RoutingDIContainer {
         if ($this->validateDb($db)) $this->db = $db;
         else {
             $message = 'Expects an object for argument $db.';
-            throw new InvalidArgumentException($message);
+            throw new \InvalidArgumentException($message);
         }
     }
 

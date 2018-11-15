@@ -73,7 +73,7 @@ class Router extends Output {
 
             $dc->logger->logError($e);
             $m = 'Could not construct Router. '.$e->getMessage();
-            throw new Exception($m, 0, $e);
+            throw new \Exception($m, 0, $e);
         }
     }
 
@@ -153,7 +153,7 @@ class Router extends Output {
 
                 $m = __METHOD__.': User does not have sufficient privileges
                      to make this request.';
-                throw new Exception($m);
+                throw new \Exception($m);
             }
 
             $response = (!$this->request->isAsync() && $serveClientAppOnSync)
@@ -323,13 +323,13 @@ class Router extends Output {
     private function callRequestedAction() {
 
         if (isset($this->action)) $action = $this->action;
-        else throw new Exception(__METHOD__.': No Action Given.');
+        else throw new \Exception(__METHOD__.': No Action Given.');
 
         $response = $this->controller->{ $action }();
 
         if (!($response instanceof ControllerResponse)) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': User-Defined controller must return an instance
                 of class ControllerResponse.'
             );

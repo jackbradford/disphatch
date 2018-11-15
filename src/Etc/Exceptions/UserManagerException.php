@@ -12,5 +12,5 @@ namespace JackBradford\ActionRouter\Etc\Exceptions;
  * TODO: Find out if and when an exception like this is thrown. It may be
  * better to create a more-specific exception(s).
  */
-class UserManagerException extends Exception {}
+class UserManagerException extends \Exception {}
 

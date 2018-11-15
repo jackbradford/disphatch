@@ -80,7 +80,7 @@ class UserManager {
     public function authorize($method) {
 
         if (!$this->user) {
-            throw new Exception(__METHOD__ . ': User not set.');
+            throw new \Exception(__METHOD__ . ': User not set.');
         }
 
         $auths = $this->config->getDirective('permissions');
@@ -88,7 +88,7 @@ class UserManager {
         if (!property_exists($auths, $method)) {
 
             $m = __METHOD__ . ': No permissions for the given method could be found. ';
-            throw new Exception($m);
+            throw new \Exception($m);
         }
 
         foreach ($auths->{$method} as $permission) { 
@@ -129,7 +129,7 @@ class UserManager {
             'password' => $password,
         ])) {
 
-            throw new Exception(
+            throw new \Exception(
                 __METHOD__.': Could not create user. Ensure all necessary
                 fields have been entered.'
             );
@@ -196,7 +196,7 @@ class UserManager {
         } 
         else {
 
-            throw new Exception('Invalid Password.');
+            throw new \Exception('Invalid Password.');
         }
     }
 
@@ -212,7 +212,7 @@ class UserManager {
         if (!Sentinel::logout()) {
 
             $m = __METHOD__ . ': Could not end user session.';
-            throw new Exception($m);
+            throw new \Exception($m);
         } 
         else $this->user = null;
         return (Sentinel::check()) ? false : true;
@@ -292,7 +292,7 @@ class UserManager {
 
         if (!Sentinel::login($user)) {
 
-            throw new Exception('Login Error');
+            throw new \Exception('Login Error');
         }
     }
 
@@ -312,7 +312,7 @@ class UserManager {
         else {
 
             $message = __METHOD__.': Could not log in user: '.$user->email.'.';
-            throw new Exception($message);
+            throw new \Exception($message);
         }
     }
 
@@ -333,7 +333,7 @@ class UserManager {
         ]);
 
         if (!$user) {
-            throw new Exception(__METHOD__.': Invalid Username.');
+            throw new \Exception(__METHOD__.': Invalid Username.');
         }
 
         return $user;
