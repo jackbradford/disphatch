@@ -113,7 +113,6 @@ class Config {
 
         $this->load($file);
         $this->loadUserManagementSystem();
-        $this->defineGlobalConstants();
     }
 
     /**
@@ -126,29 +125,6 @@ class Config {
 
         $properties = get_object_vars($this);
         foreach ($properties as $prop => $val) unset($this->{$prop});
-    }
-
-    /**
-     * @method Config::defineGlobalConstants
-     * Extract settings from the configuration file and use them to set global
-     * constants.
-     *
-     * @return void
-     *
-     */
-    private function defineGlobalConstants() {
-
-        $controllers = $this->getDirective('controllers');
-        $defaultCtrl = $controllers->default;
-        unset($controllers->default);
-
-        define('CONTROLLERS', (array) $controllers);
-        define('TEMPLATES', (array) $this->getDirective('templates'));
-        define('DEFAULT_CONTROLLER', $defaultCtrl);
-        define('DEFAULT_ACTION', $this->getDirective('default_action'));
-        define('CTRL_QUERY_STR', $this->getDirective('ctrl_query_str'));
-        define('ACTION_QUERY_STR', $this->getDirective('action_query_str'));
-        define('ASYNC_POST_FLAG', $this->getDirective('async_post_flag'));
     }
 
     /**

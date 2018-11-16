@@ -1,6 +1,6 @@
 {
-    "action_query_str": "actn",
-    "ctrl_query_str": "ctrl",
+    "action_query_str_label": "actn",
+    "ctrl_query_str_label": "ctrl",
     "async_post_flag": "ajrq",
 
     "default_action": "home",

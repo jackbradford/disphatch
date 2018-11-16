@@ -13,6 +13,7 @@ namespace JackBradford\ActionRouter\Etc;
 
 class Request {
 
+    private $config;
     private $fieldMap;
     private $requestedPage;
     private $requestParameters;
@@ -24,6 +25,9 @@ class Request {
      * Construct a new instance of the Request class to represent the original
      * request to the application.
      *
+     * @param Config $config
+     * An instance of the Config class.
+     *
      * @return Request
      * Returns an instance of Request, initialized with each argument/value from
      * the original URL's query string loaded into the $requestParameters
@@ -31,9 +35,10 @@ class Request {
      *
      * TODO: Figure out if $argv is actually needed; I suspect it is not.
      */
-    public function __construct() {
+    public function __construct(Config $config) {
 
         global $argv;
+        $this->config = $config;
         $this->parseRequest();
     }
 
@@ -48,7 +53,9 @@ class Request {
      */
     public function isForPublicResource() {
 
-        return CONTROLLERS[$this->getLabelOfRequestedController()]['isPublic'];
+        return $this->config->getDirective('controllers')
+            ->{ $this->getLabelOfRequestedController() }
+            ->isPublic;
     }
 
     /**
@@ -76,7 +83,8 @@ class Request {
      */
     public function isAsync() {
 
-        return (isset($_POST[ASYNC_POST_FLAG])) ? true : false;
+        $asyncPostFlag = $this->config->getDirective('async_post_flag');
+        return (isset($_POST[$asyncPostFlag])) ? true : false;
     }
 
     /**
@@ -106,7 +114,9 @@ class Request {
      */
     public function getClassNameOfRequestedController() {
 
-        return CONTROLLERS[$this->getLabelOfRequestedController()]['class'];
+        return $this->config->getDirective('controllers')
+            ->{ $this->getLabelOfRequestedController() }
+            ->class;
     }
 
     /**
@@ -122,14 +132,17 @@ class Request {
      */
     public function getLabelOfRequestedController() {
 
-        if (!isset($this->requestParameters[CTRL_QUERY_STR])) {
+        $controllers = $this->config->getDirective('controllers');
+        $ctrlQueryStr = $this->config->getDirective('ctrl_query_str');
 
-            return DEFAULT_CONTROLLER;
+        if (!isset($this->requestParameters[$ctrlQueryStr])) {
+
+            return $controllers->default;
         }
 
-        $ctrl = $this->requestParameters[CTRL_QUERY_STR];
+        $ctrl = $this->requestParameters[$ctrlQueryStr];
 
-        if (!array_key_exists($ctrl, CONTROLLERS)) {
+        if (!array_key_exists($ctrl, (array) $controllers)) {
             
             $m = __METHOD__ . ': Invalid controller requested.';
             throw new \Exception($m);
@@ -149,9 +162,13 @@ class Request {
      */
     public function getNameOfRequestedAction() {
 
-        return (isset($this->requestParameters[ACTION_QUERY_STR]))
-            ? $this->requestParameters[ACTION_QUERY_STR]
-            : DEFAULT_ACTION;
+        $actionQueryStrLabel = $this->config
+            ->getDirective('action_query_str_label');
+        $defaultAction = $this->config
+            ->getDirective('default_action');
+        return (isset($this->requestParameters[$actionQueryStrLabel]))
+            ? $this->requestParameters[$actionQueryStrLabel]
+            : $defaultAction;
     }
 
     /**
