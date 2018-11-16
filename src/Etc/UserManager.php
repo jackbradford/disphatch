@@ -1,6 +1,7 @@
 <?php
 
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
+use JackBradford\ActionRouter\Config\Config;
 
 /**
  * @file user_manager.php
