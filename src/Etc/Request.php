@@ -11,6 +11,8 @@
  */
 namespace JackBradford\ActionRouter\Etc;
 
+use JackBradford\ActionRouter\Config\Config;
+
 class Request {
 
     private $config;

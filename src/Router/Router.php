@@ -99,7 +99,7 @@ class Router extends Output {
 
             $config = new Config();
             $config->setConfigurationFromFile($configPath);
-            $request = new Request();
+            $request = new Request($config);
             $user = new UserManager($request, $config);
             $logger = (is_null($logger)) ? new Logger() : $logger;
 
