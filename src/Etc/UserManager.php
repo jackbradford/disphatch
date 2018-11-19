@@ -1,8 +1,4 @@
 <?php
-
-use Cartalyst\Sentinel\Native\Facades\Sentinel;
-use JackBradford\ActionRouter\Config\Config;
-
 /**
  * @file user_manager.php
  * This file provides an abstraction layer to the library being used to manage
@@ -14,6 +10,9 @@ use JackBradford\ActionRouter\Config\Config;
  * and providing information about the user.
  */
 namespace JackBradford\ActionRouter\Etc;
+
+use Cartalyst\Sentinel\Native\Facades\Sentinel;
+use JackBradford\ActionRouter\Config\Config;
 
 class UserManager {
 
