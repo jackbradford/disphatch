@@ -32,8 +32,8 @@ class Logger implements ILogger {
         if (is_object($db) || is_null($db)) $this->db = $db;
         else {
 
-            $message = __METHOD__ . ': Argument $db must be an instance of a
-                database-abstraction class, or must be NULL.';
+            $message = __METHOD__ . ': Argument $db must be an instance of a '
+                . ' database-abstraction class, or must be NULL.';
             throw new \InvalidArgumentException($message);
         }
     }
@@ -72,14 +72,14 @@ class Logger implements ILogger {
      *
      * @return void
      */
-    protected function addEntryToDatabase() {}
+    public function addEntryToDatabase(Exception $e) {}
 
     protected function addEntryToLogFile() {
 
         if (is_string($this->e)) error_log($this->e, 0);
         else {
-            $m  =   $this->e->getMessage() . "\n Trace:\n";
-            $m  .=  $this->e->getTraceAsString();
+            $m  =   $this->e->getMessage() . "\nTrace:\n";
+            $m  .=  $this->e->getTraceAsString() . "\n";
             error_log($m, 0);
         }
     }
