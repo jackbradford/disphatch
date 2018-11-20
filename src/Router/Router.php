@@ -12,11 +12,8 @@
  */
 namespace JackBradford\ActionRouter\Router;
 
-use JackBradford\ActionRouter\Config\Settings;
 use JackBradford\ActionRouter\Config\Config;
 use JackBradford\ActionRouter\Controllers\ControllerResponse;
-use JackBradford\ActionRouter\Db\Db;
-use JackBradford\ActionRouter\Db\DbFactory;
 use JackBradford\ActionRouter\Etc\Request;
 use JackBradford\ActionRouter\Etc\UserManager;
 use JackBradford\ActionRouter\Etc\Logger;
