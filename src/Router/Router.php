@@ -113,7 +113,7 @@ class Router extends Output {
         }
         catch (NotLoggedInException $e) {
 
-            $this->requestLogin($request, $user);
+            self::requestLogin($request, $user);
         }
         catch (Exception $e) {
 
@@ -413,7 +413,7 @@ class Router extends Output {
      *
      * @return void
      */
-    private function requestLogin(Request $request, UserManager $user) {
+    private static function requestLogin(Request $request, UserManager $user) {
 
         $login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
         $user->{ $login }();
