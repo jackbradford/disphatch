@@ -17,7 +17,7 @@ use JackBradford\ActionRouter\Controllers\ControllerResponse;
 use JackBradford\ActionRouter\Etc\Request;
 use JackBradford\ActionRouter\Etc\UserManager;
 use JackBradford\ActionRouter\Etc\Logger;
-use JackBradford\ActionRouter\Etc\NotLoggedInException;
+use JackBradford\ActionRouter\Etc\Exceptions\NotLoggedInException;
 use JackBradford\ActionRouter\Etc\RoutingDIContainer;
 
 /*
