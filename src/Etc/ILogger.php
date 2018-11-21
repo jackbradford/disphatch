@@ -12,9 +12,9 @@ namespace JackBradford\ActionRouter\Etc;
 
 interface ILogger {
 
-    public function __construct();
+    public function __construct($db);
 
-    public function logError();
+    public function logError($e);
 
     public function addEntryToDatabase(Exception $e);
 }
