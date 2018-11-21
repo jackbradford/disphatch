@@ -285,7 +285,7 @@ class UserManager {
     public function sendToLoginPage() {
 
         // TODO validate login page path?
-        require_once $this->settings->getDirective('login_page_path');
+        require_once $this->config->getDirective('login_page_path');
     }
 
     private function attemptLogin($user) {
