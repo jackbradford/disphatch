@@ -2,6 +2,7 @@
     "action_query_str_label": "actn",
     "ctrl_query_str_label": "ctrl",
     "async_post_flag": "ajrq",
+    "login_page_path": "filepath/file.php",
 
     "default_action": "home",
 
