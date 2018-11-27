@@ -64,7 +64,6 @@ class Router extends Output {
             $this->logger = $dc->logger;
             $this->db = $dc->db;
             $this->user = $dc->user;
-            $this->routes = $this->loadRoutes();
         }
         catch (Exception $e) {
 
