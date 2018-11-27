@@ -13,6 +13,7 @@
 namespace JackBradford\ActionRouter\Router;
 
 use JackBradford\ActionRouter\Config\Config;
+use JackBradford\ActionRouter\Controllers;
 use JackBradford\ActionRouter\Controllers\ControllerResponse;
 use JackBradford\ActionRouter\Etc\Request;
 use JackBradford\ActionRouter\Etc\UserManager;
@@ -158,8 +159,9 @@ class Router extends Output {
 
         try {
 
-            $ctrlrName = $this->request->getClassNameOfRequestedController();
-            $this->setController(new $ctrlrName($this, $this->dc));
+            $ctrlrName = 'Controllers\\' . $this->request
+                ->getClassNameOfRequestedController();
+            $this->setController(new ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
             $this->authorizeRequest();
 
