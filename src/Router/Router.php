@@ -125,10 +125,19 @@ class Router extends Output {
 
         if (!$this->user->isAuthorizedToMakeRequest()) {
 
-            $message = 'Authentication Required. '
-                . 'User must log in before making this request.';
-            throw new NotLoggedInException($message);
+            throw new NotLoggedInException(
+                'Authentication Required. User must log in before making '
+                . 'this request.'
+            );
         }
+        if (!$this->user->hasPermission($ctrlrName.'::'.$this->action)) {
+
+            throw new \Exception(
+                'Insufficient Permission. User does not have the privileges '
+                . 'necessary to make this request.'
+            );
+        }
+
     }
 
     /**
@@ -136,7 +145,7 @@ class Router extends Output {
      * Route the request to the appropriate controller action, then execute
      * that action.
      *
-     * @param bool $serveClientAppOnSync
+     * @param bool $serveClientAppOnSyncReq
      * Specify whether the router should serve the HTML necessary to run the
      * client application, rather than the requested data, if the request is
      * synchronous.
@@ -145,31 +154,21 @@ class Router extends Output {
      * Emits a JSON object (or the HTML necessary to run the client
      * application).
      */
-    public function routeAndExecuteRequest($serveClientAppOnSync=true) {
+    public function routeAndExecuteRequest($serveClientAppOnSyncReq=true) {
 
         try {
 
-            $this->authorizeRequest();
-            $ctrlr = $this->request->getClassNameOfRequestedController();
-            $controller = new $ctrlr($this, $this->dc);
-
-            $this->setController($controller);
+            $ctrlrName = $this->request->getClassNameOfRequestedController();
+            $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
+            $this->authorizeRequest();
 
-            if (!$this->user->authorize($ctrlr.'::'.$this->action)) {
-
-                $m = __METHOD__.': User does not have sufficient privileges
-                     to make this request.';
-                throw new \Exception($m);
-            }
-
-            $response = (!$this->request->isAsync() && $serveClientAppOnSync)
+            $response = (!$this->request->isAsync() && $serveClientAppOnSyncReq)
                 ? $this->callClientApp()
                 : $this->callRequestedAction();
 
             $this->setResponse($response);
             $this->serveContent();
-
         }
         catch (NotLoggedInException $e) {
 

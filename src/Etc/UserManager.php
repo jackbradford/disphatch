@@ -63,17 +63,17 @@ class UserManager {
     }
 
     /**
-     * @method UserManager::authorize()
-     * Authorize a user's request. When a user's request specifies an "action,"
-     * that action is managed by a method in the appropriate controller. Each
-     * method may have different access requirements, and this method affords
-     * the enforcement of those requirements.
+     * @method UserManager::hasPermission()
+     * Check for sufficient permission. When a user's request specifies an
+     * "action," that action is managed by a method in the appropriate
+     * controller. Each method may have different access requirements, and
+     * this method affords the enforcement of those requirements.
      *
      * @param str $method
      * The method to authorize. E.g. ClassName::methodName
      *
      * @return bool
-     * Returns TRUE if authorization has been granted, FALSE otherwise. If the
+     * Returns TRUE if permission has been granted, FALSE otherwise. If the
      * method given cannot be found in the permission/method map, an exception
      * will be thrown.
      */
