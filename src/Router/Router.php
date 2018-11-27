@@ -161,7 +161,7 @@ class Router extends Output {
 
             $ctrlrName = 'Controllers\\' . $this->request
                 ->getClassNameOfRequestedController();
-            $this->setController(new ctrlrName($this, $this->dc));
+            $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
             $this->authorizeRequest();
 
