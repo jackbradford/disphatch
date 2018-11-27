@@ -7,6 +7,9 @@
  */
 namespace JackBradford\ActionRouter\Controllers;
 
+use JackBradford\ActionRouter\Etc\RoutingDIContainer;
+use JackBradford\ActionRouter\Router\Router;
+
 abstract class Controller {
 
     protected $config;
