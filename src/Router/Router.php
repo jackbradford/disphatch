@@ -90,7 +90,7 @@ class Router extends Output {
      *
      * @return Router
      */
-    public static function init($configPath, ILogger $logger = null, $db = null) {
+    public static function init($configPath, ILogger $logger=null, $db=null) {
 
         try {
 
@@ -100,25 +100,35 @@ class Router extends Output {
             $user = new UserManager($request, $config);
             $logger = (is_null($logger)) ? new Logger() : $logger;
 
-            if (!$user->isAuthorizedToMakeRequest()) {
-
-                $message = 'User must log in; request was not for authorization. ';
-                $message .= 'Asking user to send authorization request...';
-                throw new NotLoggedInException($message);
-            }
-
-            $dc = new RoutingDIContainer($config, $request, $logger, $user, $db);
-
-            return new Router($dc);
-        }
-        catch (NotLoggedInException $e) {
-
-            self::requestLogin($request, $user);
+            return new Router(
+                new RoutingDIContainer($config, $request, $logger, $user, $db)
+            );
         }
         catch (Exception $e) {
 
             $m = $e->getMessage() . "\n" . $e->getTraceAsString();
             error_log('ActionRouter failed to initialize: '.$m);
+        }
+    }
+
+    /**
+     * @method Router::authorizeRequest()
+     * Attempt to authorize the request by verifying that the end-user is
+     * logged in, requesting a public resource, is using the CLI, or is
+     * making an authentication request.
+     *
+     * @return void
+     * Throws an exception if the request cannot be served without
+     * authentication.
+     */
+    protected function authorizeRequest() {
+
+
+        if (!$this->user->isAuthorizedToMakeRequest()) {
+
+            $message = 'Authentication Required. '
+                . 'User must log in before making this request.';
+            throw new NotLoggedInException($message);
         }
     }
 
@@ -140,6 +150,7 @@ class Router extends Output {
 
         try {
 
+            $this->authorizeRequest();
             $ctrlr = $this->request->getClassNameOfRequestedController();
             $controller = new $ctrlr($this, $this->dc);
 
@@ -160,6 +171,10 @@ class Router extends Output {
             $this->setResponse($response);
             $this->serveContent();
 
+        }
+        catch (NotLoggedInException $e) {
+
+            self::requestLogin($request, $user);
         }
         catch (Exception $e) {
 
