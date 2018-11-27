@@ -7,6 +7,8 @@
  */
 namespace JackBradford\ActionRouter\Etc;
 
+use JackBradford\ActionRouter\Config\Config;
+
 class RoutingDIContainer {
 
     public $config;
