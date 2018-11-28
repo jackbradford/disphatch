@@ -135,7 +135,7 @@ class Request {
     public function getLabelOfRequestedController() {
 
         $controllers = $this->config->getDirective('controllers');
-        $ctrlQueryStr = $this->config->getDirective('ctrl_query_str');
+        $ctrlQueryStr = $this->config->getDirective('ctrl_query_str_label');
 
         if (!isset($this->requestParameters[$ctrlQueryStr])) {
 
