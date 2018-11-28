@@ -168,7 +168,7 @@ class Router extends Output {
         }
         catch (NotLoggedInException $e) {
 
-            self::requestLogin($request, $user);
+            self::requestLogin($this->request, $this->user);
         }
         catch (Exception $e) {
 
