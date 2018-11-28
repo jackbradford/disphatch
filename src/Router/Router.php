@@ -14,17 +14,12 @@ namespace JackBradford\ActionRouter\Router;
 
 use JackBradford\ActionRouter\Config\Config;
 use JackBradford\ActionRouter\Controllers\ControllerResponse;
+use JackBradford\ActionRouter\Controllers\IRequestController;
 use JackBradford\ActionRouter\Etc\Request;
 use JackBradford\ActionRouter\Etc\UserManager;
 use JackBradford\ActionRouter\Etc\Logger;
 use JackBradford\ActionRouter\Etc\Exceptions\NotLoggedInException;
 use JackBradford\ActionRouter\Etc\RoutingDIContainer;
-
-/*
- * use JackBradford\ActionRouter\Config;
- * use JackBradford\ActionRouter\Db;
- * use JackBradford\ActionRouter\Etc;
- */
 
 class Router extends Output {
 
