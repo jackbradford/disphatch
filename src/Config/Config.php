@@ -1,20 +1,10 @@
 <?php
 /**
  * @file
- * This file provides definitions of constants and loads up the classes
- * required by the system. 
- *
- *
- * Output Buffering
- * ================
- * The output buffer is initialized at the beginning of the script to increase
- * the degree of control over the final output to the browser.
- *
- *
- * User Management - Sentinel by Cartalyst
- * =======================================
- * Sentinel, the user management library by Cartalyst is loaded.
- *
+ * This file provides a means to load configuration settings from a file
+ * and retreive them without risk of altering the directives. It also serves
+ * to initialize the system, including the loading of the user management
+ * system.
  *
  */
 namespace JackBradford\ActionRouter\Config;
@@ -41,7 +31,6 @@ class Config {
      * Create a new Config instance.
      *
      * @return Config
-     *
      */
     public function __construct() {}
 
@@ -54,19 +43,21 @@ class Config {
      *
      * @return mixed
      * Returns the value (or array) of the specified directive.
-     *
      */
     public function getDirective($section) {
 
         if (!property_exists($this, $section)) {
 
-            $message = __METHOD__.': Invalid property: '.$section;
-            throw new \InvalidArgumentException($message);
+            throw new \InvalidArgumentException(
+                'Invalid property: ' . $section . '.'
+            );
         }
 
         if (!isset($this->{$section})) {
 
-            throw new \InvalidArgumentException('Directive is not set.');
+            throw new \InvalidArgumentException(
+                'Directive is not set: ' . $section . '.'
+            );
         }
 
         return $this->{$section};
@@ -91,8 +82,9 @@ class Config {
 
             if (!property_exists($this, $sectionName)) {
 
-                $message = __METHOD__.': Invalid property: '.$sectionName;
-                throw new \Exception($message);
+                throw new \Exception(
+                    'Invalid property: ' . $sectionName . '.'
+                );
             }
 
             $this->{$sectionName} = $section;
@@ -107,7 +99,6 @@ class Config {
      * The filename of the configuration (.conf.json) file.
      *
      * @return void
-     *
      */
     public function setConfigurationFromFile($file) {
 
@@ -132,7 +123,6 @@ class Config {
      * Load Sentinel, the user management system.
      *
      * @return void
-     *
      */
     private function loadUserManagementSystem() {
 
@@ -198,9 +188,9 @@ class Config {
 
         if (!is_object($settings)) {
 
-            $m = __METHOD__ . ': Expects object. '
-                . 'Check file location and verify JSON is valid.';
-            throw new \Exception($m);
+            throw new \InvalidArgumentException(
+                'Expected object. Check file location and verify JSON is valid.'
+            );
         }
 
         return $settings;
