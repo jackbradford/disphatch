@@ -54,7 +54,7 @@ class UserManager {
      */
     public function askForAsyncLogin() {
 
-        $response = new AsyncResponse([
+        $response = new AsyncResponse($this, [
 
             'success' => false,
             'title' => 'Login Required',
