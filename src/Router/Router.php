@@ -353,8 +353,15 @@ class Router extends Output {
      */
     private function holdCLISession() {
 
-        $this->updateRequest(readline('ActionRouter> '));
-        $this->routeAndExecuteRequest(false);
+        try {
+
+            $this->updateRequest(readline('ActionRouter> '));
+            $this->routeAndExecuteRequest(false);
+        }
+        catch (\Exception $e) {
+
+            echo $e->getMessage();
+        }
         $this->holdCLISession();
     }
 
@@ -475,10 +482,16 @@ class Router extends Output {
         foreach ($params as $param) {
 
             $e = explode("=", $param);
+            if (!isset($e[1])) {
+
+                throw new Exception(
+                    'Syntax error: invalid argument.'
+                );
+            }
             $_GET[$e[0]] = $e[1];
         }
 
-        $this->request = new Request();
+        $this->request = new Request($this->config);
     }
 }
 
