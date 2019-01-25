@@ -19,6 +19,7 @@ class Request {
     private $fieldMap;
     private $requestedPage;
     private $requestParameters;
+    private $isFromCLI;
 
     private function __clone() {}
 
@@ -40,6 +41,7 @@ class Request {
     public function __construct(Config $config) {
 
         global $argv;
+        $this->isFromCLI = (isset($argv)) ? true : false;
         $this->config = $config;
         $this->parseRequest();
     }
@@ -70,7 +72,8 @@ class Request {
      */
     public function isFromCLI() {
 
-        return (isset($argv)) ? true : false;
+        //   return (isset($argv)) ? true : false;
+        return $this->isFromCLI;   
     }
 
     /**
