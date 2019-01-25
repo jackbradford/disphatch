@@ -484,7 +484,7 @@ class Router extends Output {
             $e = explode("=", $param);
             if (!isset($e[1])) {
 
-                throw new Exception(
+                throw new \Exception(
                     'Syntax error: invalid argument.'
                 );
             }
