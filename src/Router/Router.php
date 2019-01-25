@@ -344,6 +344,12 @@ class Router extends Output {
         return $response;
     }
 
+    private function checkForCLIExit(array $param) {
+
+        if (isset($param[1])) return;
+        if ($param[0] === 'exit') exit('Bye.' . "\n");
+    }
+
     /**
      * @method Router::holdCLISession
      * This method is responsible for asking the user to enter a command,
@@ -482,16 +488,23 @@ class Router extends Output {
         foreach ($params as $param) {
 
             $e = explode("=", $param);
-            if (!isset($e[1])) {
-
-                throw new \Exception(
-                    'Syntax error: invalid argument.'
-                );
-            }
+            $this->checkForCLIExit($e);
+            $this->validateCLIParam($e);
             $_GET[$e[0]] = $e[1];
         }
 
         $this->request = new Request($this->config);
+    }
+
+    private function validateCLIParam(array $param) {
+
+        if (!isset($e[1])) {
+
+            throw new \Exception(
+                'Syntax error. Arguments must be separated by spaces'
+                . ' and of the form param=value.' . "\n"
+            );
+        }
     }
 }
 
