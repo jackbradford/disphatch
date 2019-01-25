@@ -498,7 +498,7 @@ class Router extends Output {
 
     private function validateCLIParam(array $param) {
 
-        if (!isset($e[1])) {
+        if (!isset($param[1])) {
 
             throw new \Exception(
                 'Syntax error. Arguments must be separated by spaces'
