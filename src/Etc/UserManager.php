@@ -80,15 +80,16 @@ class UserManager {
     public function authorize($method) {
 
         if (!$this->user) {
-            throw new \Exception(__METHOD__ . ': User not set.');
+            throw new \Exception('User has not been set.');
         }
 
         $auths = $this->config->getDirective('permissions');
 
         if (!property_exists($auths, $method)) {
 
-            $m = __METHOD__ . ': No permissions for the given method could be found. ';
-            throw new \Exception($m);
+            throw new \Exception(
+                'No permissions for the given method could be found. '
+            );
         }
 
         foreach ($auths->{$method} as $permission) { 
@@ -130,8 +131,8 @@ class UserManager {
         ])) {
 
             throw new \Exception(
-                __METHOD__.': Could not create user. Ensure all necessary
-                fields have been entered.'
+                'Could not create user. Ensure all necessary
+                fields have been entered. '
             );
         }
 
@@ -211,8 +212,7 @@ class UserManager {
 
         if (!Sentinel::logout()) {
 
-            $m = __METHOD__ . ': Could not end user session.';
-            throw new \Exception($m);
+            throw new \Exception('Could not end user session.');
         } 
         else $this->user = null;
         return (Sentinel::check()) ? false : true;
@@ -311,8 +311,9 @@ class UserManager {
         } 
         else {
 
-            $message = __METHOD__.': Could not log in user: '.$user->email.'.';
-            throw new \Exception($message);
+            throw new \Exception(
+                'Could not log in user: ' . $user->email . '.'
+            );
         }
     }
 
@@ -333,7 +334,7 @@ class UserManager {
         ]);
 
         if (!$user) {
-            throw new \Exception(__METHOD__.': Invalid Username.');
+            throw new \Exception('Invalid Username. ');
         }
 
         return $user;

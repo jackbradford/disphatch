@@ -231,7 +231,7 @@ class Router extends Output {
         }
         catch (\Exception $e) {
 
-            echo $e->getMessage();
+            echo $e->getMessage() . "\n";
         }
     }
 
