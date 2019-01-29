@@ -8,10 +8,10 @@ namespace JackBradford\ActionRouter\Controllers;
 
 class AuthControllers extends Controller implements IRequestController {
 
-    public function __toString() {
-
-        return 'auth';
-    }
+//    public function __toString() {
+//
+//        return 'auth';
+//    }
 
     public function auth() {
 

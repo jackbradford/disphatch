@@ -30,6 +30,11 @@ abstract class Controller {
         $this->userMgr = $dc->user;
     }
 
+    final public function __toString() {
+
+        return __CLASS__;
+    }
+
     /**
      * @method Controller::fromGET
      * Access a parameter passed to the script via $_GET and return NULL if

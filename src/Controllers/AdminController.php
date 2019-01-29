@@ -8,10 +8,10 @@ namespace JackBradford\ActionRouter\Controllers;
 
 class AdminController extends Controller implements IRequestController {
 
-    public function __toString() {
-
-        return 'admin';
-    }
+//    public function __toString() {
+//
+//        return 'admin';
+//    }
 
     /**
      * @method AdminController::addUser

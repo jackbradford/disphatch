@@ -69,30 +69,41 @@ class UserManager {
      * controller. Each method may have different access requirements, and
      * this method affords the enforcement of those requirements.
      *
+     * @param str $class
+     * The class (response controller) to which the requested action belongs,
+     * including the namespace it was declared in.
+     *
      * @param str $method
-     * The method (action) to authorize. E.g. ClassName::methodName
+     * The name of the method (action) to authorize.
      *
      * @return bool
      * Returns TRUE if permission has been granted, FALSE otherwise. If the
      * method given cannot be found in the permission/method map, an exception
      * will be thrown.
      */
-    public function authorizeAction($method) {
+    public function authorizeAction($class, $method) {
 
         if (!$this->user) {
             throw new \Exception('User has not been set.');
         }
 
         $auths = $this->config->getDirective('permissions');
+        
+        if (!property_exists($auths, $class)) {
 
-        if (!property_exists($auths, $method)) {
+            throw new \Exception(
+                'No permissions for the given controller could be found.'
+            );
+        }
+
+        if (!property_exists($auths->{$class}, $method)) {
 
             throw new \Exception(
                 'No permissions for the given method could be found. '
             );
         }
 
-        foreach ($auths->{$method} as $permission) { 
+        foreach ($auths->{$class}->{$method} as $permission) { 
         
             if (!$this->user->hasAccess($permission)) return false;
         }

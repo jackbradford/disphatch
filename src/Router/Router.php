@@ -125,7 +125,9 @@ class Router extends Output {
                 . 'this request.'
             );
         }
-        if (!$this->user->authorizeAction($ctrlrName.'::'.$this->action)) {
+        if (!$this->user->authorizeAction(
+            (string) $this->controller, $this->action)
+        ) {
 
             throw new \Exception(
                 'Insufficient Permission. User does not have the privileges '
@@ -153,8 +155,7 @@ class Router extends Output {
 
         try {
 
-            $ctrlrName = 'JackBradford\ActionRouter\Controllers\\'
-                . $this->request->getClassNameOfRequestedController();
+            $ctrlrName = $this->request->getClassNameOfRequestedController();
             $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
             $this->authorizeRequest();
