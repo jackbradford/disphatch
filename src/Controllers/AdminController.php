@@ -55,7 +55,9 @@ class AdminController extends Controller implements IRequestController {
             $data['activation_code'] = $activation->getDetails()->code;
         }
 
-        return new ControllerResponse(true, null, $data);
+        $cliMsg = 'User added successfully. Activation code: '
+            . $data['activation_code'];
+        return new ControllerResponse(true, $cliMsg, $data);
     }
 
     /**
