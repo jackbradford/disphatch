@@ -216,16 +216,23 @@ class Router extends Output {
     public function enableCLISession() {
 
         if (!$this->request->isFromCLI()) return;
-        if (!$this->user->isLoggedIn()) {
+        try {
 
-            $this->config->parseArgvIntoGet();
-            $this->user->login([
-                'un' => $_GET['un'],
-                'pw' => $_GET['pw'],
-            ]);
-            echo 'Welcome to the ActionRouter monitor.'."\n";
+            if (!$this->user->isLoggedIn()) {
+
+                $this->config->parseArgvIntoGet();
+                $this->user->login([
+                    'un' => $_GET['un'],
+                    'pw' => $_GET['pw'],
+                ]);
+                echo 'Welcome to the ActionRouter monitor.'."\n";
+            }
+            $this->holdCLISession();
         }
-        $this->holdCLISession();
+        catch (\Exception $e) {
+
+            echo $e->getMessage();
+        }
     }
 
     /**
