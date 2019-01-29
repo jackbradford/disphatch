@@ -226,13 +226,13 @@ class Router extends Output {
                     'pw' => $_GET['pw'],
                 ]);
                 echo 'Welcome to the ActionRouter monitor.'."\n";
+                $this->holdCLISession();
             }
         }
         catch (\Exception $e) {
 
             echo $e->getMessage() . "\n";
         }
-        $this->holdCLISession();
     }
 
     /**
