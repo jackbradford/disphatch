@@ -142,6 +142,25 @@ class Config {
         ]);
 
         $capsule->bootEloquent();
+        $this->initAdminUser();
+    }
+
+    /**
+     * @method Config::initAdminUser()
+     * Initialize the admin user account if it does not already exist.
+     *
+     * @return void
+     */
+    private function initAdminUser() {
+
+        if (null === Sentinel::findByCredentials(['login'=>'admin'])) {
+
+            $admin = Sentinel::registerAndActivate([
+                'email' => 'admin',
+                'password' => 'admin',
+                'first_name' => 'admin',
+            ]);
+        }
     }
 
     /**
