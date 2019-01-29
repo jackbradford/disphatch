@@ -92,14 +92,16 @@ class UserManager {
         if (!property_exists($auths, $class)) {
 
             throw new \Exception(
-                'No permissions for the given controller could be found.'
+                'No permissions for the given controller could be found: '
+                . $class
             );
         }
 
         if (!property_exists($auths->{$class}, $method)) {
 
             throw new \Exception(
-                'No permissions for the given method could be found. '
+                'No permissions for the given method could be found: '
+                . $method
             );
         }
 
