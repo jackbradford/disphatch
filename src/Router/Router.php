@@ -125,11 +125,11 @@ class Router extends Output {
                 . 'this request.'
             );
         }
-        if (!$this->user->hasPermission($ctrlrName.'::'.$this->action)) {
+        if (!$this->user->authorizeAction($ctrlrName.'::'.$this->action)) {
 
             throw new \Exception(
                 'Insufficient Permission. User does not have the privileges '
-                . 'necessary to make this request.'
+                . 'necessary to perform the requested action.'
             );
         }
 

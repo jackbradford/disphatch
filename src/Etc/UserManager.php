@@ -63,21 +63,21 @@ class UserManager {
     }
 
     /**
-     * @method UserManager::hasPermission()
+     * @method UserManager::authorizeAction()
      * Check for sufficient permission. When a user's request specifies an
      * "action," that action is managed by a method in the appropriate
      * controller. Each method may have different access requirements, and
      * this method affords the enforcement of those requirements.
      *
      * @param str $method
-     * The method to authorize. E.g. ClassName::methodName
+     * The method (action) to authorize. E.g. ClassName::methodName
      *
      * @return bool
      * Returns TRUE if permission has been granted, FALSE otherwise. If the
      * method given cannot be found in the permission/method map, an exception
      * will be thrown.
      */
-    public function authorize($method) {
+    public function authorizeAction($method) {
 
         if (!$this->user) {
             throw new \Exception('User has not been set.');
