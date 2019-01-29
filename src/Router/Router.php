@@ -509,7 +509,7 @@ class Router extends Output {
 
             throw new \Exception(
                 'Syntax error. Arguments must be separated by spaces'
-                . ' and of the form param=value.' . "\n"
+                . ' and of the form param=value.'
             );
         }
     }
