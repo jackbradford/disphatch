@@ -227,12 +227,12 @@ class Router extends Output {
                 ]);
                 echo 'Welcome to the ActionRouter monitor.'."\n";
             }
-            $this->holdCLISession();
         }
         catch (\Exception $e) {
 
             echo $e->getMessage() . "\n";
         }
+        $this->holdCLISession();
     }
 
     /**
@@ -373,7 +373,7 @@ class Router extends Output {
         }
         catch (\Exception $e) {
 
-            echo $e->getMessage();
+            echo $e->getMessage() . "\n";
         }
         $this->holdCLISession();
     }
