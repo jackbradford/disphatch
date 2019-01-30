@@ -23,6 +23,7 @@ class Config {
     private $dbs;
     private $login_page_path;
     private $permissions;
+    private $roles;
     private $templates;
     private $users;
 
@@ -142,6 +143,7 @@ class Config {
         ]);
 
         $capsule->bootEloquent();
+        $this->initRoles();
         $this->initAdminUser();
     }
 
@@ -160,6 +162,26 @@ class Config {
                 'password' => 'admin',
                 'first_name' => 'admin',
             ]);
+            $adminRole = Sentinel::findRoleBySlug('administrator');
+            $adminRole->users()->attach($admin);
+        }
+    }
+
+    private function initRoles() {
+
+        foreach ($this->roles as $role => $permissions) {
+
+            if (($role = Sentinel::findRoleBySlug($role)) === null) {
+
+                $role = Sentinel::getRoleRepository()->createModel()->create([
+                    'name' => ucfirst($role),
+                    'slug' => $role
+                ]);
+            }
+            $permSet = [];
+            foreach ($permissions as $perm) $permSet[$perm] = true;
+            $role->permissions = $permSet;
+            $role->save();
         }
     }
 
