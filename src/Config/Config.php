@@ -169,13 +169,13 @@ class Config {
 
     private function initRoles() {
 
-        foreach ($this->roles as $role => $permissions) {
+        foreach ($this->roles as $slug => $permissions) {
 
-            if (($role = Sentinel::findRoleBySlug($role)) === null) {
+            if (($role = Sentinel::findRoleBySlug($slug)) === null) {
 
                 $role = Sentinel::getRoleRepository()->createModel()->create([
-                    'name' => ucfirst($role),
-                    'slug' => $role
+                    'name' => ucfirst($slug),
+                    'slug' => $slug
                 ]);
             }
             $permSet = [];
