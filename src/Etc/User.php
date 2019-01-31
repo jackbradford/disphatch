@@ -7,7 +7,6 @@
 namespace JackBradford\ActionRouter\Etc;
 
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
-use Cartalyst\Sentinel\Activations\EloquentActivation as EloquentActivation;
 use Cartalyst\Sentinel\Users\EloquentUser;
 
 class User {
@@ -38,10 +37,11 @@ class User {
     public function getActivation() {
 
         $user = $this->sentinelUser;
+        $actvn = Sentinel::getActivationRepository();
 
-        if (!$activation = EloquentActivation::exists($user)) {
+        if (!$activation = $actvn->exists($user)) {
     
-            $activation = EloquentActivation::create($user);
+            $activation = $actvn->create($user);
         }
 
         return new Activation([
@@ -104,20 +104,21 @@ class User {
     public function completeActivation($code) {
 
         $user = $this->sentinelUser;
+        $actvn = Sentinel::getActivationRepository();
 
-        if (EloquentActivation::completed($user)) return;
+        if ($actvn->completed($user)) return;
 
-        if (!EloquentActivation::exists($user)) {
+        if (!$actvn->exists($user)) {
 
             throw new \Exception(
-                __METHOD__.': No activation record exists for this user.'
+                'No activation record exists for this user.'
             );
         }
 
-        if (!EloquentActivation::complete($user, $code)) {
+        if (!$actvn->complete($user, $code)) {
 
             throw new \Exception(
-                __METHOD__.': Activation failed. Sentinel returned false.'
+                'Activation could not be completed.'
             );
         }
     }
@@ -133,11 +134,12 @@ class User {
     public function deactivate() {
 
         $user = $this->sentinelUser;
+        $actvn = Sentinel::getActivationRepository();
 
-        if (EloquentActivation::remove($user) !== true) {
+        if ($actvn->remove($user) !== true) {
 
             throw new \Exception(
-                __METHOD__.': Could not remove activation record for user.'
+                'Could not remove activation record for user.'
             );
         }
     }
@@ -173,9 +175,7 @@ class User {
 
         if (!Sentinel::update($this->sentinelUser, $credentials)) {
 
-            throw new \Exception(
-                __METHOD__.': Could not update user.'
-            );
+            throw new \Exception('Could not update user.');
         }
 
         $creds = [];

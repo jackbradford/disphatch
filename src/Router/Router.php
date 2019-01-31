@@ -232,6 +232,7 @@ class Router extends Output {
         }
         catch (\Exception $e) {
 
+            $this->logger->logError($e);
             echo $e->getMessage() . "\n";
         }
     }
@@ -374,6 +375,7 @@ class Router extends Output {
         }
         catch (\Exception $e) {
 
+            $this->logger->logError($e);
             echo $e->getMessage() . "\n";
         }
         $this->holdCLISession();

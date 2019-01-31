@@ -61,7 +61,7 @@ class Logger implements ILogger {
 
         $this->e    =   $e;
         $this->addEntryToLogFile();
-        if (is_object($this->e)) $this->addEntryToDatabase();
+        if (is_object($this->e)) $this->addEntryToDatabase($this->e);
     }
 
     /**
@@ -72,7 +72,7 @@ class Logger implements ILogger {
      *
      * @return void
      */
-    public function addEntryToDatabase(Exception $e) {}
+    public function addEntryToDatabase(\Exception $e) {}
 
     protected function addEntryToLogFile() {
 

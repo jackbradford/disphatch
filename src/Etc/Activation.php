@@ -63,9 +63,9 @@ class Activation {
         return (object) [
 
             'code' => $this->code,
-            'userId' => $this->user_id,
-            'createdAt' => $this->created_at,
-            'updatedAt' => $this->updated_at,
+            'userId' => $this->userId,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
             'id' => $this->id,
         ];
     }

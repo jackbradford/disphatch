@@ -45,10 +45,23 @@ class ControllerResponse {
         $content=null
     ) {
 
-        $this->success = $this->validateSuccess($success);
-        $this->cliMessage = $this->validateString($cliMsg);
-        $this->data = $data;
-        $this->content = $this->validateString($content);
+        try {
+
+            $this->success = $this->validateSuccess($success);
+            $this->cliMessage = (is_null($cliMsg))
+                ? null
+                : $this->validateString($cliMsg);
+            $this->data = $data;
+            $this->content = (is_null($content))
+                ? null
+                : $this->validateString($content);
+        }
+        catch (\Exception $e) {
+
+            throw new \Exception(
+                'Could not construct ControllerResponse: ' . $e->getMessage()
+            );
+        }
     }
 
     /**
@@ -123,8 +136,7 @@ class ControllerResponse {
         if (!is_bool($success)) {
 
             throw new \InvalidArgumentException(
-                __CLASS__ . ': $success expects boolean. '
-                . gettype($success) . ' given.'
+                'Boolean expected. ' . gettype($success) . ' given.'
             );
         }
 

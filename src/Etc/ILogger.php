@@ -16,6 +16,6 @@ interface ILogger {
 
     public function logError($e);
 
-    public function addEntryToDatabase(Exception $e);
+    public function addEntryToDatabase(\Exception $e);
 }
 
