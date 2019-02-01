@@ -12,6 +12,8 @@
 namespace JackBradford\ActionRouter\Router;
 
 use JackBradford\ActionRouter\Controllers\ControllerResponse;
+use JackBradford\ActionRouter\Etc\AsyncResponse;
+use JackBradford\ActionRouter\Etc\UserManager;
 
 class Output {
 
@@ -56,8 +58,9 @@ class Output {
 
         if (!is_string($metaDesc)) {
 
-            $m = __METHOD__ . ' expects $metaDesc as string.';
-            throw new \InvalidArgumentException($m, 406);
+            throw new \InvalidArgumentException(
+                'Invalid page meta description: expects string.'
+            );
         }
 
         $this->metaDesc = htmlspecialchars($metaDesc);
@@ -83,9 +86,10 @@ class Output {
             || !isset($info['section'])
         ) {
 
-            $m = __METHOD__ . " expects the \$info array to include 'title', ";
-            $m .= "'metaDesc', and 'section' nodes.";
-            throw new \InvalidArgumentException($m, 408);
+            throw new \InvalidArgumentException(
+                'Invalid array: must include \'title\', \'metaDesc\', and '
+                . '\'section\' nodes.'
+            );
         }
 
         $this->setTitle($info['title']);
@@ -109,8 +113,9 @@ class Output {
 
         if (!is_string($section)) {
 
-            $m = __METHOD__ . ' expects $section as string.';
-            throw new \InvalidArgumentException($m, 407);
+            throw new \InvalidArgumentException(
+                'Invalid section name: expected string.'
+            );
         }
 
         $this->section = htmlspecialchars($section);
@@ -131,8 +136,9 @@ class Output {
 
         if (!is_string($templatePath)) {
 
-            $m = __METHOD__ . ' expects argument $templatePath as string.';
-            throw new \InvalidArgumentException($m, 404);
+            throw new \InvalidArgumentException(
+                'Invalid template path: expected string.'
+            );
         }
 
         $this->templatePath = $templatePath;
@@ -153,56 +159,115 @@ class Output {
 
         if (!is_string($title)) {
 
-            $m = __METHOD__ . ' expects $title as string.';
-            throw new \InvalidArgumentException($m, 405);
+            throw new \InvalidArgumentException(
+                'Invalid page title: expected string.'
+            );
         }
 
         $this->title = htmlspecialchars($title);
     }
 
     /**
-     * TODO: adapt to ControllerResponse
-     * @method Output::flushContent()
-     * Flush the content set in the $content property to the client. Flushes
-     * only the content, without any template.
+     * @method Output::checkResponseExists()
+     * Check that a controller response has been set.
      *
      * @return void
-     * Sends the contents of the instance's $content property to the client.
+     * Throws an Exception if no response exists.
      */
-    protected function flushContent() {
+    protected function checkResponseExists() {
 
         if (empty($this->response)) {
 
-            $m = __METHOD__ . ': No content found.';
-            throw new \BadMethodCallException($m, 408);
+            throw new \Exception(
+                'Could not flush content: No response found.'
+            );
         }
-
-        // TODO flush which content?
-        echo $this->content;
     }
 
     /**
-     * TODO: adapt to ControllerResponse
-     * @method Output::flushAll()
-     * Flush the content set in the $content property within the template set in
-     * the $templatePath property to the client.
+     * @method Output::flushCLIMessage()
+     * Send the message defined in the controller response to the console.
      *
      * @return void
-     * Sends the template, along with the contents of the instance's $content
-     * property, to the client.
+     * Emits a string.
+     */
+    protected function flushCLIMessage() {
+
+        $this->checkResponseExists();
+        if (($msg = $this->response->getCLIMessage()) === null) {
+
+            throw new \Exception(
+                'Could not flush CLI Message: response contained no message.'
+            );
+        }
+        echo $msg;
+    }
+
+    /**
+     * @method Output::flushContent()
+     * Emit the content defined in the controller response. Emits only the
+     * content, without any template.
+     *
+     * @return void
+     * Emits a string.
+     */
+    protected function flushContent() {
+
+        $this->checkResponseExists();
+        if (($content = $this->response->getContent()) === null) {
+
+            throw new \Exception(
+                'Could not flush content: response contained no content.'
+            );
+        }
+        echo $content;
+    }
+
+    /**
+     * @method Output::flushData()
+     * Emit the data object defined in the controller response in reply to
+     * e.g. an asynchronous request from a client application.
+     *
+     * @param UserManager $userMgr
+     *
+     * @return void
+     * Emits an object/string.
+     */
+    protected function flushData(UserManager $userMgr) {
+
+        $this->checkResponseExists();
+        $resp = new AsyncResponse($userMgr, [
+
+            'success' => $this->response->isSuccess(),
+            'data' => $this->response->getData(),
+        ]);
+        $resp->sendJSONResponse();
+    }
+
+    /**
+     * @method Output::flushAll()
+     * Emit the content defined in the controller response in the defined
+     * template.
+     *
+     * @return void
+     * Emits the template, along with the content defined in the controller
+     * response.
      */
     protected function flushAll() {
 
+        $this->checkResponseExists();
         if (empty($this->templatePath)) {
 
-            $m = __METHOD__ . ': No template path found.';
-            throw new \BadMethodCallException($m, 401);
+            throw new \BadMethodCallException(
+                'Could not flush content: No template path found.'
+            );
         }
 
-        if (empty($this->content)) {
+        if (($content = $this->response->getContent()) === null) {
 
-            $m = __METHOD__ . ': No content found.';
-            throw new \BadMethodCallException($m, 402);
+            throw new \BadMethodCallException(
+                'Could not flush content: No content found.'
+            );
         }
 
         require_once $this->templatePath;

@@ -46,23 +46,6 @@ class UserManager {
     }
 
     /**
-     * @method UserManager::askForAsyncLogin()
-     * For the case that the user has previously logged in and is using e.g. a
-     * client-based JS application, but the server session timed out since the
-     * user's last request. This method returns a JSON response to be handled by
-     * that client application.
-     */
-    public function askForAsyncLogin() {
-
-        $response = new AsyncResponse($this, [
-
-            'success' => false,
-            'title' => 'Login Required',
-        ]);
-        $response->sendJSONResponse();
-    }
-
-    /**
      * @method UserManager::authorizeAction()
      * Check for sufficient permission. When a user's request specifies an
      * "action," that action is managed by a method in the appropriate
@@ -286,19 +269,6 @@ class UserManager {
     public function currentUserHasAccess($permissions) {
 
         return ($this->$user->hasAccess($permissions)) ? true : false;
-    }
-
-    /**
-     * @method UserManager::sendToLoginPage()
-     * Send a user to the login page.
-     *
-     * @return void
-     * Loads the login page into the current output buffer.
-     */
-    public function sendToLoginPage() {
-
-        // TODO validate login page path?
-        require_once $this->config->getDirective('login_page_path');
     }
 
     private function attemptLogin($user) {

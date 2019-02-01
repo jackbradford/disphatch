@@ -165,17 +165,17 @@ class Router extends Output {
                 : $this->callRequestedAction();
 
             $this->setResponse($response);
-            $this->serveContent();
         }
         catch (NotLoggedInException $e) {
 
-            self::requestLogin($this->request, $this->user);
+            $this->setResponse($this->requestLogin());
         }
         catch (Exception $e) {
 
             $this->logger->logError($e);
-            $this->serveErrorNotice($e);
+            $this->setResponse($this->getErrorNotice($e));
         }
+        $this->serveContent();
     }
 
     /**
@@ -264,7 +264,6 @@ class Router extends Output {
     }
 
     /**
-     * TODO: update for use with ControllerResponse
      * @method Router::serveContent()
      * Serve the content set in the $content property.
      *
@@ -279,32 +278,38 @@ class Router extends Output {
      */
     public function serveContent() {
 
-        if ($this->request->isAsync()) $this->flushContent();
+        if ($this->request->isAsync()) $this->flushData();
+        elseif ($this->request->isFromCLI()) $this->flushCLIMessage();
         elseif ($this->serveContentOnly === true) $this->flushContent();
         else $this->flushAll();
     }
 
     /**
-     * @method serveErrorNotice()
-     * Serve the Error Page (or deliver an error notice to the client) in the
-     * event of an unrecoverable (but non-fatal) exception.
+     * @method getErrorNotice()
+     * Return a controller response which indicates an error has occurred.
      *
      * @param Exception $e
      * The exception which could not be recovered from.
+     *
+     * @param bool $genericMsg
+     * If true, send a generic error message. Otherwise, send the text of the
+     * exception message.
+     *
+     * @return ControllerResponse
      */
-    public function serveErrorNotice($e) {
+    public function getErrorNotice(\Exception $e, $genericMsg=true) {
 
-        $data = $this->prepareAsyncErrorNotice($e);
+        if (!is_bool($genericMsg)) {
+
+            throw new \InvalidArgumentException('Expected boolean.');
+        }
+        $data = $this->prepareAsyncErrorNotice($e, $genericMsg);
         $cliMsg = $this->prepareCLIErrorNotice($e);
-        $content = $this->preapreErrorPage($e);
-        $response = new ControllerResponse(false, $cliMsg, $data, $content);
-
-        $this->setResponse($response);
-        $this->serveContent();
+        $content = $this->prepareErrorPage($e, $genericMsg);
+        return new ControllerResponse(false, $cliMsg, $data, $content);
     }
 
     /**
-     * TODO: make sure this works with ControllerResponse
      * @method Router::toggleServeContentOnly()
      * Toggle or specify the setting which determines whether content should be
      * sent to the client within an HTML template or by itself, e.g. in the case
@@ -328,6 +333,23 @@ class Router extends Output {
     }
 
     /**
+     * @method Router::askForAsyncLogin()
+     * For the case that the user has previously logged in and is using e.g. a
+     * client-based JS application, but the server session timed out since the
+     * user's last request. This method returns a JSON response to be handled by
+     * that client application.
+     */
+    public function askForAsyncLogin() {
+
+        $msg = 'You must be logged in to complete this request.';
+        $data = [
+            'error_code' => 'login_required',
+            'message' => $msg
+        ];
+        return new ControllerResponse(false, null, $data);
+    }
+
+    /**
      * @method callRequestedAction()
      * Call the action specified in the request via the appropriate controller.
      *
@@ -338,15 +360,22 @@ class Router extends Output {
     private function callRequestedAction() {
 
         if (isset($this->action)) $action = $this->action;
-        else throw new \Exception(__METHOD__.': No Action Given.');
+        else throw new \Exception('No Action Given.');
 
-        $response = $this->controller->{ $action }();
+        try {
+            
+            $response = $this->controller->{ $action }();
+        }
+        catch (Exception $e) {
+
+            $response = $this->getErrorNotice($e, false);
+        }
 
         if (!($response instanceof ControllerResponse)) {
 
             throw new \Exception(
-                __METHOD__.': User-Defined controller must return an instance
-                of class ControllerResponse.'
+                'User-Defined controller must return an instance '
+                . 'of class ControllerResponse.'
             );
         }
 
@@ -386,16 +415,22 @@ class Router extends Output {
      * Serve an error notice in response to a failed asynchronous request.
      *
      * @param Exception $e
+     *
+     * @param bool $genericMsg
+     * If true, use the generic error message. Otherwise, use the exception
+     * message.
+     *
      * @return str
      */
-    private function prepareAsyncErrorNotice(Exception $e) {
+    private function prepareAsyncErrorNotice(Exception $e, $genericMsg) {
 
-        $result = new AsyncResponse($this->user, [
-            'success' => false,
-            'title' => 'The server could not process your request.',
-            'message' => $e->getMessage(),
-        ]);
-        return $res->getJSONResponse();
+        $msg = ($genericMsg)
+            ? 'The server could not complete your request.'
+            : $e->getMessage();
+        return [
+            'error_code' => 'server_error',
+            'message' => $msg
+        ];
     }
 
     /**
@@ -412,24 +447,33 @@ class Router extends Output {
 
     /**
      * @method Router::prepareErrorPage
-     * Create an error notice in response to a failed (synchronous) request.
-     * This method should return HTML for the error page body (that is, not
-     * including the HTML of the page template).
+     * Generates and returns the error page content. The content is inserted
+     * into the error page template defined in the config file for the
+     * requested controller. The error page template should only contain the
+     * layout for the main body of the page (i.e. excluding any headers,
+     * footers, etc.). The error page template will, itself, be placed into
+     * the page template defined in the config file.
      *
      * @param Exception $e
+     *
+     * @param bool $genericMsg
+     * If true, use the generic error message. Otherwise, use the exception
+     * message.
+     *
      * @return str
      */
-    private function prepareErrorPage(Exception $e) {
+    private function prepareErrorPage(Exception $e, $genericMsg) {
 
         $ctrlr = $this->config->getDirective('controllers')
             ->{$this->request->getLabelOfRequestedController()};
 
-        $template = $ctrlr->errorPageTemplate;
         $title = $ctrlr->errorPageHeading;
-        $message = $e->getMessage();
+        $message = ($genericMsg)
+            ? 'The server could not process your request.'
+            : $e->getMessage();
 
         ob_start();
-        require_once $template;
+        require_once $ctrl->errorPageTemplate;
         return ob_get_clean();
     }
 
@@ -437,18 +481,28 @@ class Router extends Output {
      * @method Router::requestLogin
      * Determine a method via which to request a login from the user.
      *
-     * @param Request $request
-     * The instance of the Request class which represents the current request.
-     *
-     * @param UserManager $user
-     * The instance of the UserManager class which represents the current user.
+     * @return ControllerResponse
+     */
+    private function requestLogin() {
+
+        $login = ($this->request->isAsync())
+            ? 'askForAsyncLogin'
+            : 'sendToLoginPage';
+        return $this->{ $login }();
+    }
+
+    /**
+     * @method Router::sendToLoginPage()
+     * Send a user to the login page.
      *
      * @return void
+     * Loads the login page into the current output buffer.
      */
-    private static function requestLogin(Request $request, UserManager $user) {
+    private function sendToLoginPage() {
 
-        $login = ($request->isAsync()) ? 'askForAsyncLogin' : 'sendToLoginPage';
-        $user->{ $login }();
+        ob_start();
+        require_once $this->config->getDirective('login_page_path');
+        return new ControllerResponse(true, null, [], ob_get_clean());
     }
 
     /**

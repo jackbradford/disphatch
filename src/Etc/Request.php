@@ -35,8 +35,6 @@ class Request {
      * Returns an instance of Request, initialized with each argument/value from
      * the original URL's query string loaded into the $requestParameters
      * property.
-     *
-     * TODO: Figure out if $argv is actually needed; I suspect it is not.
      */
     public function __construct(Config $config) {
 
@@ -72,7 +70,6 @@ class Request {
      */
     public function isFromCLI() {
 
-        //   return (isset($argv)) ? true : false;
         return $this->isFromCLI;   
     }
 
