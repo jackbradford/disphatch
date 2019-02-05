@@ -200,7 +200,7 @@ class Output {
                 'Could not flush CLI Message: response contained no message.'
             );
         }
-        echo $msg;
+        echo $msg . "\n";
     }
 
     /**
