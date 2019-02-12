@@ -140,7 +140,15 @@ class AdminController extends Controller implements IRequestController {
         $email = $this->fromGET('email');
         $user = $this->userMgr->getUser($email);
         $data = json_decode(json_encode($user->getDetails()), true);
-        $cliMessage = "Details for user ".$user->getFullName().":";
+        $cliMessage = "Details for user " . $user->getFullName() . ":\n"
+            . "id: " . $data['id'] . "\n"
+            . "email: " . $data['email'] . "\n"
+            . "permissions:\n" . $this->objectToString($data['permissions'], 1)
+            . "last login:\n" . $this->objectToString($data['lastLogin'], 1)
+            . "first name: " . $data['firstName'] . "\n"
+            . "last name: " . $data['lastName'] . "\n"
+            . "created at: " . $data['createdAt'] . "\n"
+            . "updated at: " . $data['updatedAt'];
 
         return new ControllerResponse(true, $cliMessage, $data);
     }
@@ -203,6 +211,17 @@ class AdminController extends Controller implements IRequestController {
 
             throw new \Exception(__METHOD__ . ': Could not activate user.');
         }
+    }
+
+    private function objectToString($object, $tab=false) {
+
+        $str = '';
+        foreach ($object as $key => $value) {
+
+            if ($tab == false) $str .= "\t";
+            $str .= $key . ": " . $value . "\n";
+        }
+        return $str;
     }
 }
 
