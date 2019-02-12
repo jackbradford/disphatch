@@ -8,11 +8,6 @@ namespace JackBradford\ActionRouter\Controllers;
 
 class AdminController extends Controller implements IRequestController {
 
-//    public function __toString() {
-//
-//        return 'admin';
-//    }
-
     /**
      * @method AdminController::addUser
      * Create a new user and actication record. Optionally, fully activate
@@ -48,15 +43,19 @@ class AdminController extends Controller implements IRequestController {
             ? true
             : false;
 
-        if ($activate) $this->fullyActivateUser($user);
+        if ($activate) {
+            
+            $this->fullyActivateUser($user);
+            $cliMsg = 'User added and activated.';
+        }
         else {
 
             $activation = $user->getActivation();
             $data['activation_code'] = $activation->getDetails()->code;
+            $cliMsg = 'User added successfully. Activation code: '
+                . $data['activation_code'];
         }
 
-        $cliMsg = 'User added successfully. Activation code: '
-            . $data['activation_code'];
         return new ControllerResponse(true, $cliMsg, $data);
     }
 
