@@ -143,12 +143,14 @@ class AdminController extends Controller implements IRequestController {
         $cliMessage = "Details for user " . $user->getFullName() . ":\n"
             . "id: " . $data['id'] . "\n"
             . "email: " . $data['email'] . "\n"
-            . "permissions:\n" . $this->objectToString($data['permissions'], 1)
-            . "last login:\n" . $this->objectToString($data['lastLogin'], 1)
+            . "permissions:\n"
+            . $this->objectToString($user->getDetails()->permissions, 1)
+            . "last login:\n"
+            . $this->objectToString($user->getDetails()->lastLogin, 1)
             . "first name: " . $data['firstName'] . "\n"
             . "last name: " . $data['lastName'] . "\n"
-            . "created at: " . $data['createdAt'] . "\n"
-            . "updated at: " . $data['updatedAt'];
+            . "created at:\n" . $this->objectToString($data['createdAt'], 1)
+            . "updated at:\n" . $this->objectToString($data['updatedAt'], 1);
 
         return new ControllerResponse(true, $cliMessage, $data);
     }
@@ -216,9 +218,14 @@ class AdminController extends Controller implements IRequestController {
     private function objectToString($object, $tab=false) {
 
         $str = '';
+        if (!is_array($object)) {
+
+            $str .= ($tab == true) ? "    " : "";
+            return $str . gettype($object) . "\n";
+        }
         foreach ($object as $key => $value) {
 
-            if ($tab == false) $str .= "\t";
+            if ($tab == true) $str .= "    ";
             $str .= $key . ": " . $value . "\n";
         }
         return $str;
