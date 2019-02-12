@@ -82,6 +82,33 @@ class AdminController extends Controller implements IRequestController {
     }
 
     /**
+     * @method AdminController::createActivation()
+     * Create an activation record for a user. This must be done prior to
+     * completing the activation with AdminController::activateUser(),
+     * except in the case that the user was newly created.
+     *
+     * @param str $_GET['email']
+     * The email associated with the user's account.
+     *
+     * @return ControllerResponse
+     * The response will contain the activation code, which is necessary to
+     * complete the activation.
+     */
+    public function createActivation() {
+
+        $email = $this->fromGET('email');
+        $user = $this->userMgr->getUser($email);
+        $activation = $user->getActivation();
+        $data = [
+            'user' => $user->getDetails(),
+            'code' => $activation->getDetails()->code,
+        ];
+        $cliMsg = 'Activation record created. Code: ' . $data['code'];
+
+        return new ControllerResponse(true, $cliMsg, $data);
+    }
+
+    /**
      * @method AdminController::deactivateUser
      * Deactivate a user without removing the user from the system.
      *
