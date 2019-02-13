@@ -165,32 +165,32 @@ class AdminController extends Controller implements IRequestController {
      * @param str $_GET['email'] (optional)
      * The user's updated email address.
      *
-     * @param str $_GET['firstname']
+     * @param str $_GET['firstname'] (optional)
      * The user's updated first name.
      *
-     * @param str $_GET['lastname']
+     * @param str $_GET['lastname'] (optional)
      * The user's updated last name.
+     *
+     * @param str $_GET['password'] (optional)
+     * The user's updated password.
      *
      * @return ControllerResponse
      */
     public function updateUser() {
 
-        $id = $this->fromGET('id');
-        $user = $this->userMgr->getUserById($id);
-        $creds = [];
-        $updates = [
+        $userData = ['email', 'first_name', 'last_name', 'password'];
+        $updates = [];
+        foreach ($userData as $item) {
 
-            'email' => $this->fromGET('email'),
-            'first_name' => $this->fromGET('fisrtname'),
-            'last_name' => $this->fromGET('lastname'),
-        ];
-
-        foreach ($updates as $key => $value) {
-
-            if (!is_null($value)) $creds[$key] = $value;
+            $updatedItem = $this->fromGET($item);
+            if (!is_null($updatedItem)) $updates[$item] = $updatedItem;
         }
+        if (empty($updates)) {
 
-        $user->update($creds);
+            throw new \Exception('Nothing to update.');
+        }
+        $user = $this->userMgr->getUserById($this->fromGET('id'));
+        $user->update($updates);
         $cliMsg = 'User updated successfully.';
 
         return new ControllerResponse(true, $cliMsg);
