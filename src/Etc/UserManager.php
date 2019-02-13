@@ -239,7 +239,9 @@ class UserManager {
      */
     public function getUser($email) {
 
-        return new User(Sentinel::findByCredentials(['login'=>$email]));
+        $user = Sentinel::findByCredentials(['login'=>$email]);
+        if (is_null($user)) throw new \Exception('User not found.');
+        return new User($user);
     }
 
     /**
