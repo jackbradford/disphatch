@@ -4,10 +4,10 @@
  * Provides an interface for the request controllers.
  *
  */
-namespace JackBradford\ActionRouter\Controllers;
+namespace JackBradford\Disphatch\Controllers;
 
-use JackBradford\ActionRouter\Etc\RoutingDIContainer;
-use JackBradford\ActionRouter\Router\Router;
+use JackBradford\Disphatch\Etc\RoutingDIContainer;
+use JackBradford\Disphatch\Router\Router;
 
 interface IRequestController {
 

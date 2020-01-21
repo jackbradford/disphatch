@@ -8,7 +8,7 @@
  * example, one could add support for their database.
  *
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
 interface ILogger {
 

@@ -6,7 +6,7 @@
  * predictable output.
  *
  */
-namespace JackBradford\ActionRouter\Controllers;
+namespace JackBradford\Disphatch\Controllers;
 
 class ControllerResponse {
 

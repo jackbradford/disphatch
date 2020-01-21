@@ -7,7 +7,7 @@
  * system.
  *
  */
-namespace JackBradford\ActionRouter\Config;
+namespace JackBradford\Disphatch\Config;
 
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Illuminate\Database\Capsule\Manager as Capsule;

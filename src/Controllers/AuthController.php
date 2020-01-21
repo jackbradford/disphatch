@@ -4,7 +4,7 @@
  * This file provides the controller which handles authorization requests.
  *
  */
-namespace JackBradford\ActionRouter\Controllers;
+namespace JackBradford\Disphatch\Controllers;
 
 class AuthControllers extends Controller implements IRequestController {
 

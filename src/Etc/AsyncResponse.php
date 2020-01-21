@@ -8,7 +8,7 @@
  * This class is responsible for enforcing a standard mode of communication
  * with the client application.
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
 class AsyncResponse {
 

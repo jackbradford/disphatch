@@ -5,9 +5,9 @@
  * package the objects required to construct a Router.
  *
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
-use JackBradford\ActionRouter\Config\Config;
+use JackBradford\Disphatch\Config\Config;
 
 class RoutingDIContainer {
 

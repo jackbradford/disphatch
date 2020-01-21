@@ -9,9 +9,9 @@
  * interface to other components of the system through which those components
  * can make queries regarding the specifications of the request.
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
-use JackBradford\ActionRouter\Config\Config;
+use JackBradford\Disphatch\Config\Config;
 
 class Request {
 

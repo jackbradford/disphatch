@@ -9,10 +9,10 @@
  * It is responsible for authorizing user, performing tasks related to the user,
  * and providing information about the user.
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
-use JackBradford\ActionRouter\Config\Config;
+use JackBradford\Disphatch\Config\Config;
 
 class UserManager {
 

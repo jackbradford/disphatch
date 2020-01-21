@@ -10,16 +10,16 @@
  * returns a response to the router.
  *
  */
-namespace JackBradford\ActionRouter\Router;
+namespace JackBradford\Disphatch\Router;
 
-use JackBradford\ActionRouter\Config\Config;
-use JackBradford\ActionRouter\Controllers\ControllerResponse;
-use JackBradford\ActionRouter\Controllers\IRequestController;
-use JackBradford\ActionRouter\Etc\Request;
-use JackBradford\ActionRouter\Etc\UserManager;
-use JackBradford\ActionRouter\Etc\Logger;
-use JackBradford\ActionRouter\Etc\Exceptions\NotLoggedInException;
-use JackBradford\ActionRouter\Etc\RoutingDIContainer;
+use JackBradford\Disphatch\Config\Config;
+use JackBradford\Disphatch\Controllers\ControllerResponse;
+use JackBradford\Disphatch\Controllers\IRequestController;
+use JackBradford\Disphatch\Etc\Request;
+use JackBradford\Disphatch\Etc\UserManager;
+use JackBradford\Disphatch\Etc\Logger;
+use JackBradford\Disphatch\Etc\Exceptions\NotLoggedInException;
+use JackBradford\Disphatch\Etc\RoutingDIContainer;
 
 class Router extends Output {
 
@@ -101,7 +101,7 @@ class Router extends Output {
         catch (Exception $e) {
 
             $m = $e->getMessage() . "\n" . $e->getTraceAsString();
-            error_log('ActionRouter failed to initialize: '.$m);
+            error_log('Disphatch failed to initialize: '.$m);
         }
     }
 
@@ -226,7 +226,7 @@ class Router extends Output {
                     'un' => $_GET['un'],
                     'pw' => $_GET['pw'],
                 ]);
-                echo 'Welcome to the ActionRouter monitor.'."\n";
+                echo 'Welcome to the Disphatch monitor.'."\n";
             }
             $this->holdCLISession();
         }
@@ -399,7 +399,7 @@ class Router extends Output {
 
         try {
 
-            $this->updateRequest(readline('ActionRouter> '));
+            $this->updateRequest(readline('Disphatch> '));
             $this->routeAndExecuteRequest(false);
         }
         catch (\Exception $e) {

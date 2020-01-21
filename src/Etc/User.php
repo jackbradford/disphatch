@@ -4,7 +4,7 @@
  * This file provides a class to represent a user.
  *
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
 use Cartalyst\Sentinel\Native\Facades\Sentinel;
 use Cartalyst\Sentinel\Users\EloquentUser;

@@ -3,7 +3,7 @@
  * @file Etc/Exceptions/NotLoggedInException.php
  *
  */
-namespace JackBradford\ActionRouter\Etc\Exceptions;
+namespace JackBradford\Disphatch\Etc\Exceptions;
 
 /**
  * @class NotLoggedInException

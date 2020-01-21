@@ -5,10 +5,10 @@
  * implementation of controllers for use with the router.
  *
  */
-namespace JackBradford\ActionRouter\Controllers;
+namespace JackBradford\Disphatch\Controllers;
 
-use JackBradford\ActionRouter\Etc\RoutingDIContainer;
-use JackBradford\ActionRouter\Router\Router;
+use JackBradford\Disphatch\Etc\RoutingDIContainer;
+use JackBradford\Disphatch\Router\Router;
 
 abstract class Controller {
 

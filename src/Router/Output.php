@@ -9,11 +9,11 @@
  * of the final page (in the case of synchronous page requests), like the title
  * and meta description.
  */
-namespace JackBradford\ActionRouter\Router;
+namespace JackBradford\Disphatch\Router;
 
-use JackBradford\ActionRouter\Controllers\ControllerResponse;
-use JackBradford\ActionRouter\Etc\AsyncResponse;
-use JackBradford\ActionRouter\Etc\UserManager;
+use JackBradford\Disphatch\Controllers\ControllerResponse;
+use JackBradford\Disphatch\Etc\AsyncResponse;
+use JackBradford\Disphatch\Etc\UserManager;
 
 class Output {
 

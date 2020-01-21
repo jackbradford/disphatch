@@ -4,7 +4,7 @@
  * This file provides a class to represent an Activation record.
  *
  */
-namespace JackBradford\ActionRouter\Etc;;
+namespace JackBradford\Disphatch\Etc;;
 
 /**
  * @class Activation

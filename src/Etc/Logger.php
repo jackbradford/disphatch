@@ -10,7 +10,7 @@
  * access to a database to make the logs more accessible than they would be if
  * they existed in a log file only.
  */
-namespace JackBradford\ActionRouter\Etc;
+namespace JackBradford\Disphatch\Etc;
 
 class Logger implements ILogger {
 

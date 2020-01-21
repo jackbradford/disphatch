@@ -4,7 +4,7 @@
  * This file provides the controller which handles administrative actions.
  *
  */
-namespace JackBradford\ActionRouter\Controllers;
+namespace JackBradford\Disphatch\Controllers;
 
 class AdminController extends Controller implements IRequestController {
 

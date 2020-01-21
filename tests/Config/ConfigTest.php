@@ -5,7 +5,7 @@
  *
  */
 use PHPUnit\Framework\TestCase;
-use JackBradford\ActionRouter\Config\Config;
+use JackBradford\Disphatch\Config\Config;
 
 final class ConfigTest extends TestCase {
 
@@ -13,7 +13,7 @@ final class ConfigTest extends TestCase {
 
     protected function setUp() {
 
-        $file = '/var/www/vhosts/action-router/src/Config/actionrouter.conf.json';
+        $file = '/var/www/vhosts/action-router/src/Config/disphatch.conf.json';
         $this->config = new Config();
         $this->config->load($file);
     }
