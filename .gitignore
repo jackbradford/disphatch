@@ -1,2 +1,5 @@
 tags
+setup/*.sql
+setup/db_reset.sh
+bin/*
 
