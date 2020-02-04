@@ -66,7 +66,9 @@ class Config {
 
     /**
      * @method Config::load
-     * Load a configuration file for access via this class.
+     * Load a configuration file for access via this class. The configuration
+     * file should be valid JSON. Each top-level JSON object will be accessible
+     * via the properties of this class.
      *
      * @param str $file
      * The filename of the configuration (.conf.json) file.
@@ -121,7 +123,10 @@ class Config {
 
     /**
      * @method Config::loadUserManagementSystem
-     * Load Sentinel, the user management system.
+     * Load Sentinel, the user management system. This method allows Sentinel
+     * access to the database as specified in disphatch.conf.json.
+     *
+     * This method also creates the admin user if it doesn't yet exist.
      *
      * @return void
      */
@@ -167,6 +172,13 @@ class Config {
         }
     }
 
+    /**
+     * @method Config::initRoles()
+     * Create each role with the given permissions, as specified in
+     * disphatch.conf.json.
+     *
+     * @return void
+     */
     private function initRoles() {
 
         foreach ($this->roles as $slug => $permissions) {

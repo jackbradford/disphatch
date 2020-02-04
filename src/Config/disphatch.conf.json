@@ -1,0 +1,74 @@
+{
+    "action_query_str_label": "actn",
+    "ctrl_query_str_label": "ctrl",
+    "async_post_flag": "ajrq",
+    "login_page_path": "filepath/file.php",
+
+    "default_action": "home",
+
+    "client_apps": {
+        "admin": "/template.php"
+    },
+
+    "controllers": {
+        "default": "admin",
+        "admin": {
+            "class": "AdminController",
+            "isPublic": false,
+            "errorPageTemplate": "filepath/file.php",
+            "errorPageHeading": "An error has occurred."
+        },
+        "auth": {
+            "class": "AuthController",
+            "isPublic": true,
+            "errorPageTemplate": "filepath/file.php",
+            "errorPageHeading": "An error has occurred."
+        }
+    },
+
+    "dbs": {
+        "db_name": {
+            "hostname": "localhost",
+            "database": "disphatch",
+            "username": "jack",
+            "password": "kcaj"
+        },
+        "test": {
+            "hostname": "localhost",
+            "database": "disphatch",
+            "username": "jack",
+            "password": "kcaj"
+        },
+        "sentinel_db": "db_name"
+    },
+
+    "permissions": {
+        "AdminController::home": [],
+        "AdminController::createUser": [
+            "user.manage",
+            "user.create"
+        ],
+        "AuthController::auth": []
+    },
+
+    "roles": {
+        "administrator": {
+            "user.manage": true,
+            "user.create": true,
+            "user.view": true
+        },
+        "user": {}
+    },
+
+    "templates": {
+        "admin": "/template.php"
+    },
+
+    "users": {
+        "cli_user": {
+            "username": "cli",
+            "password": "AtlanticLabCLIAccessUser_2017"
+        }
+    }
+}
+
