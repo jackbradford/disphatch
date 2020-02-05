@@ -2,7 +2,7 @@
 	"name":			"jackbradford/disphatch",
     "autoload": {
         "psr-4": {
-            "JackBradford\\Disphatch" : "src"
+            "JackBradford\\Disphatch\\" : "src"
         }
     },
 	"description":	"A server side routing system in PHP for use with simple web applications.",
