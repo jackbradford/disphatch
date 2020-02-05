@@ -25,6 +25,7 @@ use JackBradford\Disphatch\Etc\RoutingDIContainer;
 class Router extends Output {
 
     private $action;
+    private $config;
     private $controller;
     private $db;
     private $dc;
@@ -159,6 +160,7 @@ class Router extends Output {
             $ctrlrName = $this->request->getClassNameOfRequestedController();
             $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
+            $this->setTemplate($this->config->getDirective('controllers')->$ctrlrName->template);
             $this->authorizeRequest();
 
             $response = (!$this->request->isAsync() && $serveClientAppOnSyncReq)
