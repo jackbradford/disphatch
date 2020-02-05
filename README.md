@@ -12,4 +12,18 @@ The package lists cartalyst/sentinel as a dependency. In my experience, Sentinel
 
 ## Usage
 ---
+After installation, include the autoload file:
+`include_once 'vendor/autoload.php';`
+
+Initialize an instance of the router:
+`$router = JackBradford\Disphatch\Router\Router::init('path/to/disphatch.conf.json');`
+
+Route and execute requests:
+`$router->routeAndExecuteRequest();`
+
+## Configuration
+---
+The router can be configured via the `disphatch.conf.json` file.
+
+
 
