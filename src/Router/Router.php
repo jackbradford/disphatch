@@ -118,7 +118,7 @@ class Router extends Output {
      */
     protected function authorizeRequest() {
 
-
+        if ($this->request->isForPublicResource()) return;
         if (!$this->user->isAuthorizedToMakeRequest()) {
 
             throw new NotLoggedInException(
