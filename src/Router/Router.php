@@ -61,7 +61,7 @@ class Router extends Output {
             $this->db = $dc->db;
             $this->user = $dc->user;
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
 
             $dc->logger->logError($e);
             $m = 'Could not construct Router. '.$e->getMessage();
@@ -99,7 +99,7 @@ class Router extends Output {
                 new RoutingDIContainer($config, $request, $logger, $user, $db)
             );
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
 
             $m = $e->getMessage() . "\n" . $e->getTraceAsString();
             error_log('Disphatch failed to initialize: '.$m);
@@ -367,7 +367,7 @@ class Router extends Output {
             
             $response = $this->controller->{ $action }();
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
 
             $response = $this->getErrorNotice($e, false);
         }
@@ -427,7 +427,7 @@ class Router extends Output {
      *
      * @return str
      */
-    private function prepareAsyncErrorNotice(Exception $e, $genericMsg) {
+    private function prepareAsyncErrorNotice(\Exception $e, $genericMsg) {
 
         $msg = ($genericMsg)
             ? 'The server could not complete your request.'
@@ -445,7 +445,7 @@ class Router extends Output {
      * @param Exception $e
      * @return str
      */
-    private function prepareCLIErrorNotice(Exception $e) {
+    private function prepareCLIErrorNotice(\Exception $e) {
 
         return 'Request could not be completed.'."\n".$e->getMessage()."\n";
     }
@@ -467,7 +467,7 @@ class Router extends Output {
      *
      * @return str
      */
-    private function prepareErrorPage(Exception $e, $genericMsg) {
+    private function prepareErrorPage(\Exception $e, $genericMsg) {
 
         $ctrlr = $this->config->getDirective('controllers')
             ->{$this->request->getLabelOfRequestedController()};
