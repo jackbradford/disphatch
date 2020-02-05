@@ -171,7 +171,7 @@ class Router extends Output {
 
             $this->setResponse($this->requestLogin());
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
 
             $this->logger->logError($e);
             $this->setResponse($this->getErrorNotice($e));

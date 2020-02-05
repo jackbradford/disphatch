@@ -66,6 +66,7 @@ class UserManager {
      */
     public function authorizeAction($class, $method) {
 
+ //       if ($this->request->isForPublicResource()) return true;
         if (!$this->user) {
             throw new \Exception('User has not been set.');
         }
