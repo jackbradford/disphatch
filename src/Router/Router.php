@@ -159,7 +159,6 @@ class Router extends Output {
             $ctrlrName = $this->request->getClassNameOfRequestedController();
             $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
-            $this->setTemplate($this->config->getDirective('controllers')->$ctrlrName->template);
             $this->authorizeRequest();
 
             $response = (!$this->request->isAsync() && $serveClientAppOnSyncReq)
@@ -365,8 +364,13 @@ class Router extends Output {
         else throw new \Exception('No Action Given.');
 
         try {
-            
+
             $response = $this->controller->{ $action }();
+            if (!$this->request->isAsync()) {
+
+                $ctrlrLabel = $this->request->getLabelOfRequestedController();
+                $this->setTemplate($this->config->getDirective('controllers')->$ctrlrLabel->template);
+            }
         }
         catch (\Exception $e) {
 
@@ -406,7 +410,7 @@ class Router extends Output {
         }
         catch (CLIExitException $e) {
 
-           exit('Bye.' . "\n"); 
+           exit('Bye.' . "\n");
         }
         catch (\Exception $e) {
 
