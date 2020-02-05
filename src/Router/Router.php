@@ -159,6 +159,7 @@ class Router extends Output {
             $ctrlrName = $this->request->getClassNameOfRequestedController();
             $this->setController(new $ctrlrName($this, $this->dc));
             $this->setControllerAction($this->request->getNameOfRequestedAction());
+            $this->setTemplateForController();
             $this->authorizeRequest();
 
             $response = (!$this->request->isAsync() && $serveClientAppOnSyncReq)
@@ -366,11 +367,6 @@ class Router extends Output {
         try {
 
             $response = $this->controller->{ $action }();
-            if (!$this->request->isAsync()) {
-
-                $ctrlrLabel = $this->request->getLabelOfRequestedController();
-                $this->setTemplate($this->config->getDirective('controllers')->$ctrlrLabel->template);
-            }
         }
         catch (\Exception $e) {
 
@@ -542,6 +538,21 @@ class Router extends Output {
     private function setControllerAction($action) {
 
         $this->action = $action;
+    }
+
+    /**
+     * @method Router::setTemplateForController()
+     * Use the requested controller to select a template for the outout.
+     *
+     * @return void
+     */
+    private function setTemplateForController() {
+
+        if (!$this->request->isAsync()) {
+
+            $ctrlrLabel = $this->request->getLabelOfRequestedController();
+            $this->setTemplate($this->config->getDirective('controllers')->$ctrlrLabel->template);
+        }
     }
 
     /**
