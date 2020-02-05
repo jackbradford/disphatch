@@ -18,6 +18,7 @@ use JackBradford\Disphatch\Controllers\IRequestController;
 use JackBradford\Disphatch\Etc\Request;
 use JackBradford\Disphatch\Etc\UserManager;
 use JackBradford\Disphatch\Etc\Logger;
+use JackBradford\Disphatch\Etc\Exceptions\CLIExitException;
 use JackBradford\Disphatch\Etc\Exceptions\NotLoggedInException;
 use JackBradford\Disphatch\Etc\RoutingDIContainer;
 
@@ -384,8 +385,8 @@ class Router extends Output {
 
     private function checkForCLIExit(array $param) {
 
-        if (isset($param[1])) return;
-        if ($param[0] === 'exit') exit('Bye.' . "\n");
+        if (isset($param[1])) return false;
+        if ($param[0] === 'exit') return true;
     }
 
     /**
@@ -401,6 +402,10 @@ class Router extends Output {
 
             $this->updateRequest(readline('Disphatch> '));
             $this->routeAndExecuteRequest(false);
+        }
+        catch (CLIExitException $e) {
+
+           exit('Bye.' . "\n"); 
         }
         catch (\Exception $e) {
 
@@ -485,6 +490,7 @@ class Router extends Output {
      */
     private function requestLogin() {
 
+        $this->toggleServeContentOnly(true); // TODO: should this be renamed toggleServeContentWithoutTemplate ?
         $login = ($this->request->isAsync())
             ? 'askForAsyncLogin'
             : 'sendToLoginPage';
@@ -552,7 +558,7 @@ class Router extends Output {
         foreach ($params as $param) {
 
             $e = explode("=", $param);
-            $this->checkForCLIExit($e);
+            if ($this->checkForCLIExit($e)) throw new CLIExitException();
             $this->validateCLIParam($e);
             $_GET[$e[0]] = $e[1];
         }
