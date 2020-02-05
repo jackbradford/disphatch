@@ -45,7 +45,7 @@ class Config {
      * @return mixed
      * Returns the value (or array) of the specified directive.
      */
-    public function getDirective($section) {
+    public function getDirective(string $section) {
 
         if (!property_exists($this, $section)) {
 
