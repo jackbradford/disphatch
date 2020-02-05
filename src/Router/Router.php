@@ -478,7 +478,7 @@ class Router extends Output {
             : $e->getMessage();
 
         ob_start();
-        require_once $ctrl->errorPageTemplate;
+        require_once $ctrlr->errorPageTemplate;
         return ob_get_clean();
     }
 
