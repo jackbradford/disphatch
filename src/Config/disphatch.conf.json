@@ -2,7 +2,7 @@
     "action_query_str_label": "actn",
     "ctrl_query_str_label": "ctrl",
     "async_post_flag": "ajrq",
-    "login_page_path": "filepath/file.php",
+    "login_page_path": "/var/www/vhosts/disphatch-test/login-example.php",
 
     "default_action": "home",
 
@@ -13,13 +13,13 @@
     "controllers": {
         "default": "admin",
         "admin": {
-            "class": "AdminController",
+            "class": "JackBradford\\Disphatch\\Controllers\\AdminController",
             "isPublic": false,
             "errorPageTemplate": "filepath/file.php",
             "errorPageHeading": "An error has occurred."
         },
         "auth": {
-            "class": "AuthController",
+            "class": "JackBradford\\Disphatch\\Controllers\\AuthController",
             "isPublic": true,
             "errorPageTemplate": "filepath/file.php",
             "errorPageHeading": "An error has occurred."
@@ -27,7 +27,7 @@
     },
 
     "dbs": {
-        "db_name": {
+        "db_label": {
             "hostname": "localhost",
             "database": "disphatch",
             "username": "jack",
@@ -39,7 +39,7 @@
             "username": "jack",
             "password": "kcaj"
         },
-        "sentinel_db": "db_name"
+        "sentinel_db": "db_label"
     },
 
     "permissions": {
@@ -61,7 +61,7 @@
     },
 
     "templates": {
-        "admin": "/template.php"
+        "admin": "/var/www/vhosts/disphatch-test/admin-template.php"
     },
 
     "users": {
