@@ -25,7 +25,6 @@ use JackBradford\Disphatch\Etc\RoutingDIContainer;
 class Router extends Output {
 
     private $action;
-    private $config;
     private $controller;
     private $db;
     private $dc;
