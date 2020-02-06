@@ -479,6 +479,7 @@ class Router extends Output {
             ->{$this->request->getLabelOfRequestedController()};
 
         $title = $ctrlr->errorPageHeading;
+        $this->setTitle($title);
         $message = ($genericMsg)
             ? 'The server could not process your request.'
             : $e->getMessage();
