@@ -196,8 +196,12 @@ class Router extends Output {
     public function callClientApp() {
 
         $label = $this->request->getLabelOfRequestedController();
-        $appPath = $this->config->getDirective('client_apps')->{$label};
-        if (empty($appPath)) throw new \Exception('No client app path found.');
+        $clientApps = $this->config->getDirective('client_apps');
+        if (!property_exists($clientApps, $label)) {
+
+            throw new \Exception('No client app path found.');
+        }
+        $appPath = $clientApps->{$label};
 
         $this->toggleServeContentOnly(true);
 
