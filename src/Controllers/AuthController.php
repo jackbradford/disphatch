@@ -6,7 +6,7 @@
  */
 namespace JackBradford\Disphatch\Controllers;
 
-class AuthControllers extends Controller implements IRequestController {
+class AuthController extends Controller implements IRequestController {
 
     public function auth() {
 
@@ -19,15 +19,21 @@ class AuthControllers extends Controller implements IRequestController {
         try {
 
             $this->userMgr->login($cred);
+            $ud = $this->userMgr->getCurrentUser()->getDetails();
             $success = true;
             $message = 'Login successful.';
+            $data = [
+                'id' => $ud->id,
+                'email' => $ud->email
+            ];
         }
         catch (\Exception $e) {
 
             $success = false;
             $message = 'Login failed. ' . $e->getMessage();
+            $data = [];
         }
-        return new ControllerResponse($success, $message);
+        return new ControllerResponse($success, $message, $data);
     }
 }
 
