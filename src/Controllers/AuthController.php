@@ -42,8 +42,13 @@ class AuthController extends Controller implements IRequestController {
 
         if ($data === null) {
 
-            throw new \Exception("Data not found or invalid.");
+            throw new \Exception("Data from client not found or invalid.");
         }
+        if (!is_object($data)) {
+
+            throw new \Exception("Data from client must be an object.");
+        }
+        return $data;
     }
 }
 

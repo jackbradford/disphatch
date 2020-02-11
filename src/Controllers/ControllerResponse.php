@@ -41,7 +41,7 @@ class ControllerResponse {
     final public function __construct(
         $success,
         $cliMsg=null,
-        array $data=[],
+        $data=[],
         $content=null
     ) {
 
