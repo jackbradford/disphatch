@@ -31,7 +31,9 @@ class AuthController extends Controller implements IRequestController {
 
             $success = false;
             $message = 'Login failed. ' . $e->getMessage();
-            $data = [];
+            $data = (object) [
+                'serverMessage' => $e->getMessage()
+            ];
         }
         return new ControllerResponse($success, $message, $data);
     }
