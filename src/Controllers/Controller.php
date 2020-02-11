@@ -54,7 +54,6 @@ abstract class Controller {
 
     /**
      * @method Controller::fromPOST
-     * @see Controller::fromGET
      */
     public function fromPOST($index) {
 
