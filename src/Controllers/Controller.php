@@ -53,6 +53,15 @@ abstract class Controller {
     }
 
     /**
+     * @method Controller::fromPOST
+     * @see Controller::fromGET
+     */
+    public function fromPOST($index) {
+
+        return (isset($_POST[$index])) ? $_POST[$index] : null;
+    }
+
+    /**
      * @method Controller::setResponse
      * Commit the result(s) of the action and provide content and/or data with
      * which to reply to the originator of the request.

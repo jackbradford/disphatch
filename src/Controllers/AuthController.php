@@ -10,17 +10,11 @@ class AuthController extends Controller implements IRequestController {
 
     public function auth() {
 
-        $data = $this->fromGET('data');
-        if ($data === null) {
-
-            throw new \Exception("'data' not found in " . '$_GET.');
-        }
-        $data = json_decode($data);
-        if ($data === null) throw new \Exception("Could not decode JSON data.");
+        $data = $this->validateData(json_decode($this->fromPOST('data')));
         $cred = [
 
-            'un' => $data['un'],
-            'pw' => $data['pw'],
+            'un' => $data->un,
+            'pw' => $data->pw,
         ];
         try {
 
@@ -40,6 +34,14 @@ class AuthController extends Controller implements IRequestController {
             $data = [];
         }
         return new ControllerResponse($success, $message, $data);
+    }
+
+    private function validateData($data) {
+
+        if ($data === null) {
+
+            throw new \Exception("Data not found or invalid.");
+        }
     }
 }
 

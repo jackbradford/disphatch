@@ -285,7 +285,7 @@ class Router extends Output {
      */
     public function serveContent() {
 
-        if ($this->request->isAsync()) $this->flushData();
+        if ($this->request->isAsync()) $this->flushData($this->user);
         elseif ($this->request->isFromCLI()) $this->flushCLIMessage();
         elseif ($this->serveContentOnly === true) $this->flushContent();
         else $this->flushAll();
