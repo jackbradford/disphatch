@@ -10,7 +10,13 @@ class AuthController extends Controller implements IRequestController {
 
     public function auth() {
 
-        $data = json_decode($this->fromGET('data'));
+        $data = $this->fromGET('data');
+        if ($data === null) {
+
+            throw new \Exception("'data' not found in " . '$_GET.');
+        }
+        $data = json_decode($data);
+        if ($data === null) throw new \Exception("Could not decode JSON data.");
         $cred = [
 
             'un' => $data['un'],
