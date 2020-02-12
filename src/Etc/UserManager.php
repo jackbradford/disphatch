@@ -320,7 +320,7 @@ class UserManager {
         ]);
 
         if (!$user) {
-            throw new \Exception('Invalid Username. ');
+            throw new \Exception('Invalid Username.');
         }
 
         return $user;

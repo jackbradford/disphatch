@@ -38,6 +38,9 @@ class AuthController extends Controller implements IRequestController {
         return new ControllerResponse($success, $message, $data);
     }
 
+    // TODO: what kind of message should go into Exceptions? Just user-facing
+    // messages?
+    // Save the internal messages for error logs?
     private function validateData($data) {
 
         if ($data === null) {
