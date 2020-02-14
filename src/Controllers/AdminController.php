@@ -33,13 +33,13 @@ class AdminController extends Controller implements IRequestController {
      */
     public function addUser() {
 
-        $fn = $this->fromGET('firstname');
-        $ln = $this->fromGET('lastname');
-        $email = $this->fromGET('email');
-        $pw = $this->fromGET('password');
+        $fn = $this->fromPOST('firstname');
+        $ln = $this->fromPOST('lastname');
+        $email = $this->fromPOST('email');
+        $pw = $this->fromPOST('password');
         $user = $this->userMgr->createUser($fn, $ln, $email, $pw);
         $data = ['user'=>$user->getDetails()];
-        $activate = (isset($_GET['activate']) && $_GET['activate'] === 1)
+        $activate = (isset($_POST['activate']) && $_POST['activate'] === 1)
             ? true
             : false;
 
