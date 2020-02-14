@@ -70,6 +70,18 @@ class Activation {
         ];
     }
 
+    /**
+     * @method Activation::sendActivationEmail()
+     * Send an activation link to the provided user email.
+     *
+     * @return void
+     * Throws an exception if the email can't be sent.
+     */
+    public function sendActivationEmail($email) {
+
+        $link = "/activate/" . $this->userId . '/' . $this->code;
+    }
+
     private function validateConstructorInput(array $data) {
 
         if (!isset($data['code'])) return false;

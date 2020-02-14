@@ -38,7 +38,7 @@ class AdminController extends Controller implements IRequestController {
         $email = $this->fromPOST('email');
         $pw = $this->fromPOST('password');
         $user = $this->userMgr->createUser($fn, $ln, $email, $pw);
-        $data = ['user'=>$user->getDetails()];
+        $data = (object)['user'=>$user->getDetails()];
         $activate = (isset($_POST['activate']) && $_POST['activate'] === 1)
             ? true
             : false;
@@ -51,9 +51,11 @@ class AdminController extends Controller implements IRequestController {
         else {
 
             $activation = $user->getActivation();
-            $data['activation_code'] = $activation->getDetails()->code;
+            $code = $activation->getDetails()->code;
+            $activation->sendActivationEmail($email);
+            $data->activation_code = $code;
             $cliMsg = 'User added successfully. Activation code: '
-                . $data['activation_code'];
+                . $data->activation_code;
         }
 
         return new ControllerResponse(true, $cliMsg, $data);
@@ -74,8 +76,8 @@ class AdminController extends Controller implements IRequestController {
     public function activateUser() {
 
         $code = $this->fromGET('code');
-        $email = $this->fromGET('email');
-        $user = $this->userMgr->getUser($email);
+        $email = $this->fromGET('userId');
+        $user = $this->userMgr->getUserById($userId);
         $user->completeActivation($code);
 
         return new ControllerResponse(true, 'User activated successfully.');
