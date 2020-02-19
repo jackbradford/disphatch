@@ -21,6 +21,7 @@ use JackBradford\Disphatch\Etc\Logger;
 use JackBradford\Disphatch\Etc\Exceptions\CLIExitException;
 use JackBradford\Disphatch\Etc\Exceptions\NotLoggedInException;
 use JackBradford\Disphatch\Etc\RoutingDIContainer;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class Router extends Output {
 
@@ -94,6 +95,21 @@ class Router extends Output {
             $request = new Request($config);
             $user = new UserManager($request, $config);
             $logger = (is_null($logger)) ? new Logger() : $logger;
+            if ($db === null) {
+
+                $db = new Capsule;
+                $credentials = $config->getDirective('dbs')->default;
+                $capsule->addConnection([
+                    'driver' => 'mysql',
+                    'host' => $credentials->hostname,
+                    'database' => $credentials->database,
+                    'username' => $credentials->username,
+                    'password' => $credentials->password,
+                    'charset' => 'utf8',
+                    'collation' => 'utf8_unicode_ci',
+                    'prefix' => '',
+                ]);
+            }
 
             return new Router(
                 new RoutingDIContainer($config, $request, $logger, $user, $db)
