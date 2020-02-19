@@ -109,6 +109,7 @@ class Router extends Output {
                     'collation' => 'utf8_unicode_ci',
                     'prefix' => '',
                 ]);
+                $db->bootEloquent();
             }
 
             return new Router(
