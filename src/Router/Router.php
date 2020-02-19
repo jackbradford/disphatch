@@ -99,7 +99,7 @@ class Router extends Output {
 
                 $db = new Capsule;
                 $credentials = $config->getDirective('dbs')->default;
-                $capsule->addConnection([
+                $db->addConnection([
                     'driver' => 'mysql',
                     'host' => $credentials->hostname,
                     'database' => $credentials->database,
