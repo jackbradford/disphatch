@@ -42,7 +42,7 @@ class UserManager {
         $this->config = $config;
         $this->user = ($this->isLoggedIn())
             ? $this->attemptSetLoggedInUser()
-            : null; 
+            : null;
     }
 
     /**
@@ -72,7 +72,7 @@ class UserManager {
         }
 
         $auths = $this->config->getDirective('permissions');
-        
+
         if (!property_exists($auths, $class)) {
 
             throw new \Exception(
@@ -89,14 +89,14 @@ class UserManager {
             );
         }
 
-        foreach ($auths->{$class}->{$method} as $permission) { 
-        
+        foreach ($auths->{$class}->{$method} as $permission) {
+
             if (!$this->user->hasAccess($permission)) return false;
         }
         return true;
 
     }
-    
+
     /**
      * @method UserManager::createUser
      * Creates a new user. Activating the user at the same time is optional.
@@ -120,7 +120,7 @@ class UserManager {
     public function createUser($fname, $lname, $email, $password) {
 
         if (!$user = Sentinel::create([
-        
+
             'first_name' => $fname,
             'last_name' => $lname,
             'email' => $email,
@@ -191,7 +191,7 @@ class UserManager {
 
             $this->attemptLogin($user);
             $this->attemptSetLoggedInUser();
-        } 
+        }
         else {
 
             throw new \Exception('Invalid Password.');
@@ -210,7 +210,7 @@ class UserManager {
         if (!Sentinel::logout()) {
 
             throw new \Exception('Could not end user session.');
-        } 
+        }
         else $this->user = null;
         return (Sentinel::check()) ? false : true;
     }
@@ -224,8 +224,8 @@ class UserManager {
      */
     public function getCurrentUser() {
 
-        return (!empty($this->user)) 
-            ? $this->user 
+        return (!empty($this->user))
+            ? $this->user
             : null;
     }
 
@@ -283,6 +283,21 @@ class UserManager {
     }
 
     /**
+     * @method UserManager::deleteUser
+     * Delete a user from the system.
+     *
+     * @param $userId
+     * The ID of the user to be deleted.
+     *
+     * @return void
+     */
+    public function deleteUser($userId) {
+
+        $user = $this->getUserById($userId);
+        $user->permanentDelete();
+    }
+
+    /**
      * @method UserManager::attemptSetLoggedInUser
      * Attempt to create an instance of the User class and assign it to this
      * instance's $user property via the currently logged-in user.
@@ -294,7 +309,7 @@ class UserManager {
         if (($loggedInUser = Sentinel::check()) !== false) {
 
             $this->user = new User($loggedInUser);
-        } 
+        }
         else {
 
             throw new \Exception(

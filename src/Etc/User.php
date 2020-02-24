@@ -145,6 +145,17 @@ class User {
     }
 
     /**
+     * @method User::permanentDelete
+     * Permanently delete a user from the system.
+     *
+     * @return void
+     */
+    public function permanentDelete() {
+
+        $this->sentinelUser->delete();
+    }
+
+    /**
      * @method User::hasAccess()
      * Check whether the user has been granted a set of permissions.
      *
