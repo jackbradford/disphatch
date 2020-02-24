@@ -4,7 +4,9 @@
  * This file provides a class to represent an Activation record.
  *
  */
-namespace JackBradford\Disphatch\Etc;;
+namespace JackBradford\Disphatch\Etc;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\MailerException;
 
 /**
  * @class Activation
@@ -74,12 +76,82 @@ class Activation {
      * @method Activation::sendActivationEmail()
      * Send an activation link to the provided user email.
      *
+     * @param object $server
+     * An object containing the server settings.
+     * ->host Specify main and backup SMTP servers.
+     *      e.g. 'smtp1.example.com;smtp2.example.com'
+     * ->username SMTP username.
+     * ->password SMTP password.
+     * ->port TCP port to connect to.
+     * ->fromAddress From address.
+     * ->fromName The name for the From address.
+     * ->recipients (array) An array of objects:
+     *      [ 'address' => '', 'name' => '' ]
+     * ->replyTo (optional) (object) 
+     *      [ 'address' => '', 'name' => '' ]
+     * ->cc (optional) (array) An array of strings.
+     * ->bcc (optional) (array) An array of strings.
+     *
      * @return void
      * Throws an exception if the email can't be sent.
      */
-    public function sendActivationEmail($email) {
+    public function sendActivationEmail($subject, $body,  $server) {
 
         $link = "/activate/" . $this->userId . '/' . $this->code;
+        $altBody = '';
+        $mail = new PHPMailer(true);
+
+        try {
+
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host = $server->host;
+            $mail->SMTPAuth = true;
+            $mail->Username = $server->username;
+            $mail->Password = $server->password;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = $server->port;
+
+            // Recipients
+            $mail->setFrom($server->fromAddress, $server->fromName);
+            foreach ($server->recipients as $recip) {
+
+                if (!isset($recip->name)) $recip->name = '';
+                $mail->addAddress($recip->address, $recip->name);
+            }
+
+            if (isset($server->replyTo)) {
+                if (!isset($server->replyTo->name)) $server->replyTo->name = '';
+                $mail->addReplyTo(
+                    $server->replyTo->address,
+                    $server->replyTo->name
+                );
+            }
+            if (isset($server->cc)) {
+                foreach ($server->cc as $cc) {
+                    $mail->addCC($cc);
+                }
+            }
+            if (isset($server->bcc)) {
+                foreach ($server->bcc as $bcc) {
+                    $mail->addBCC($bcc);
+                }
+            }
+
+            // Content
+            $mail->isHTML(true);
+            $mail->WordWrap = 72;
+            $mail->Subject = $subject;
+            $mail->Body = $body;
+            $mail->AltBody = $altBody;
+            $mail->send();
+        }
+        catch (MailerException $mailEx) {
+
+            error_log('Could not send mail.');
+            error_log($mailEx->errorMessage());
+            throw new \Exception($mailEx->errorMessage());
+        }
     }
 
     private function validateConstructorInput(array $data) {
