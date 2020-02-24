@@ -18,6 +18,8 @@ class Config {
     private $ctrl_query_str_label;
     private $async_post_flag;
     private $default_action;
+    private $dev;
+    private $email;
     private $client_apps;
     private $controllers;
     private $dbs;
