@@ -54,6 +54,23 @@ class User {
         ]);
     }
 
+    public function getNewActivation() {
+
+        $user = $this->sentinelUser;
+        $activation = Sentinel::getActivationRepository();
+
+        $activation = $activation->create($user);
+
+        return new Activation([
+
+            'code' => $activation->code,
+            'userId' => $activation->user_id,
+            'createdAt' => $activation->created_at,
+            'updatedAt' => $activation->updated_at,
+            'id' => $activation->id,
+        ]);
+    }
+
     /**
      * @method User::getDetails
      * Get the current user's details.
