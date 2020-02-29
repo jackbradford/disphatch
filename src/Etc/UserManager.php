@@ -41,7 +41,7 @@ class UserManager {
         $this->request = $request;
         $this->config = $config;
         $this->user = ($this->isLoggedIn())
-            ? $this->attemptSetLoggedInUser()
+            ? $this->attemptGetLoggedInUser()
             : null;
     }
 
@@ -190,7 +190,7 @@ class UserManager {
         if ($userIsValid) {
 
             $this->attemptLogin($user);
-            $this->attemptSetLoggedInUser();
+            $this->user = $this->attemptGetLoggedInUser();
         }
         else {
 
@@ -298,17 +298,17 @@ class UserManager {
     }
 
     /**
-     * @method UserManager::attemptSetLoggedInUser
+     * @method UserManager::attemptGetLoggedInUser
      * Attempt to create an instance of the User class and assign it to this
      * instance's $user property via the currently logged-in user.
      *
      * @return void
      */
-    private function attemptSetLoggedInUser() {
+    private function attemptGetLoggedInUser() {
 
         if (($loggedInUser = Sentinel::check()) !== false) {
 
-            $this->user = new User($loggedInUser);
+            return new User($loggedInUser);
         }
         else {
 
