@@ -91,7 +91,11 @@ class Activation {
      *      [ 'address' => '', 'name' => '' ]
      * ->cc (optional) (array) An array of strings.
      * ->bcc (optional) (array) An array of strings.
-     *
+     * ->dkim_domain (string) The DKIM domain.
+     * ->dkim_private (string) The full path to the DKIM private key.
+     * ->dkim_selector (string) The DKIM selector.
+     * ->dkim_passphrase (string)
+     * ->dkim_identity (string)
      * @return void
      * Throws an exception if the email can't be sent.
      */
@@ -137,6 +141,14 @@ class Activation {
                     $mail->addBCC($bcc);
                 }
             }
+
+            // DKIM
+            $mail->DKIM_domain = $server->dkim_domain;
+            $mail->DKIM_private = $server->dkim_private;
+            $mail->DKIM_selector = $server->dkim_selector;
+            $mail->DKIM_passphrase = $server->dkim_passphrase;
+            $mail->DKIM_identity = $mail->From;
+
 
             // Content
             $mail->isHTML(true);
