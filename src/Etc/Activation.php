@@ -113,7 +113,7 @@ class Activation {
             $mail->SMTPAuth = true;
             $mail->Username = $server->username;
             $mail->Password = $server->password;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->SMTPSecure = $server->smtp_secure;
             $mail->Port = $server->port;
 
             // Recipients
