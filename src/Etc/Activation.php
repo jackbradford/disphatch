@@ -76,6 +76,13 @@ class Activation {
      * @method Activation::sendActivationEmail()
      * Send an activation link to the provided user email.
      *
+     * @param string $subject
+     * The subject of the email.
+     *
+     * @param object $body
+     * The object should contain the keys 'html' and 'text'. The text
+     * body is used in the case the client does not support HTML emails.
+     *
      * @param object $server
      * An object containing the server settings.
      * ->host Specify main and backup SMTP servers.
@@ -99,10 +106,13 @@ class Activation {
      * @return void
      * Throws an exception if the email can't be sent.
      */
-    public function sendActivationEmail($subject, $body,  $server) {
+    public function sendActivationEmail(
+        $subject,
+        object $body,
+        object $server
+    ) {
 
         $link = "/activate/" . $this->userId . '/' . $this->code;
-        $altBody = '';
         $mail = new PHPMailer(true);
 
         try {
@@ -149,13 +159,12 @@ class Activation {
             $mail->DKIM_passphrase = $server->dkim_passphrase;
             $mail->DKIM_identity = $mail->From;
 
-
             // Content
             $mail->isHTML(true);
             $mail->WordWrap = 72;
             $mail->Subject = $subject;
-            $mail->Body = $body;
-            $mail->AltBody = $altBody;
+            $mail->Body = $body->html;
+            $mail->AltBody = $body->text;
             $mail->send();
         }
         catch (MailerException $mailEx) {
