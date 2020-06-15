@@ -86,7 +86,10 @@ class Request {
     public function isAsync() {
 
         $asyncPostFlag = $this->config->getDirective('async_post_flag');
-        return (isset($_POST[$asyncPostFlag])) ? true : false;
+        return (
+            isset($_POST[$asyncPostFlag])
+            || isset($_GET[$asyncPostFlag])
+        ) ? true : false;
     }
 
     /**
