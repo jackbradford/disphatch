@@ -15,6 +15,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 class Config {
 
     private $action_query_str_label;
+    private $app_path;
     private $ctrl_query_str_label;
     private $async_post_flag;
     private $default_action;
