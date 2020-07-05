@@ -61,6 +61,18 @@ abstract class Controller {
     }
 
     /**
+     * @method Controller::getInput
+     * Get the input given to the system at php://input, e.g. while attempting
+     * to answer an async request.
+     *
+     * @return object
+     */
+    public function getInput() {
+
+        return json_decode(file_get_contents('php://input'), true);
+    }
+
+    /**
      * @method Controller::setResponse
      * Commit the result(s) of the action and provide content and/or data with
      * which to reply to the originator of the request.

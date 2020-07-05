@@ -78,18 +78,16 @@ class Request {
      * Check if the request originated from an asynchronous request, such as a
      * browser AJAX call.
      *
+     * This method assumes all asynchronous calls will be of the type
+     * 'application/json', and that no synchronous requests will be of this
+     * type.
+     *
      * @return bool
-     * Asynchronous requests to this system should POST an argument 'ajrq' with
-     * value TRUE to the server so that it can be handled appropriately. The
-     * presence of that argument will cause this method to return TRUE.
      */
     public function isAsync() {
 
-        $asyncPostFlag = $this->config->getDirective('async_post_flag');
-        return (
-            isset($_POST[$asyncPostFlag])
-            || isset($_GET[$asyncPostFlag])
-        ) ? true : false;
+        if (!isset($_SERVER["CONTENT_TYPE"])) return false;
+        return ($_SERVER["CONTENT_TYPE"] == 'application/json') ? true : false;
     }
 
     /**
